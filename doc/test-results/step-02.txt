@@ -1,0 +1,42 @@
+Running tool: /usr/bin/go test -timeout 30s -tags test -run ^TestRegisterCustomer$ github.com/maniosgrivei/go-test-drivers/customer
+
+=== RUN   TestRegisterCustomer
+=== RUN   TestRegisterCustomer/should_register_a_customer_with_valid_data
+--- PASS: TestRegisterCustomer/should_register_a_customer_with_valid_data (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_name
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_name (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_email
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_email (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_phone
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_phone (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_name_and_email
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_name_and_email (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_name_and_phone
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_name_and_phone (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_email_and_phone
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_email_and_phone (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_all_data
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_all_data (0.00s)
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_duplicated_data
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_duplicated_data/having_same_name
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_duplicated_data/having_same_name (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_duplicated_data/having_same_email
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_duplicated_data/having_same_email (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_duplicated_data/having_same_phone
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_duplicated_data/having_same_phone (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_duplicated_data/having_same_name_and_email
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_duplicated_data/having_same_name_and_email (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_duplicated_data/having_same_name_and_phone
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_duplicated_data/having_same_name_and_phone (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_duplicated_data/having_same_email_and_phone
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_duplicated_data/having_same_email_and_phone (0.00s)
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_duplicated_data (0.00s)
+=== RUN   TestRegisterCustomer/should_not_register_the_same_user_twice
+--- PASS: TestRegisterCustomer/should_not_register_the_same_user_twice (0.00s)
+=== RUN   TestRegisterCustomer/should_return_a_generic_system_error_on_failure
+--- PASS: TestRegisterCustomer/should_return_a_generic_system_error_on_failure (0.00s)
+--- PASS: TestRegisterCustomer (0.00s)
+PASS
+ok      github.com/maniosgrivei/go-test-drivers/customer        0.010s
