@@ -22,12 +22,38 @@ func TestRegisterCustomer(t *testing.T) {
 			Phone: dfltPhone,
 		}
 
-		Init()
+		// Ensure that the repository is clean
+		customers = make([]*Customer, 0)
+		idIndex = make(map[string]*Customer)
+		nameIndex = make(map[string]*Customer)
+		emailIndex = make(map[string]*Customer)
+		phoneIndex = make(map[string]*Customer)
 
 		id, err := Register(request)
-
 		r.NoError(err)
 		r.NotEmpty(id)
+
+		// Asserting side-effects from inside
+		customer := Customer{
+			ID:    id,
+			Name:  dfltName,
+			Email: dfltEmail,
+			Phone: dfltPhone,
+		}
+
+		r.Contains(customers, &customer)
+
+		r.Contains(idIndex, id)
+		r.EqualValues(idIndex[id], &customer)
+
+		r.Contains(nameIndex, dfltName)
+		r.EqualValues(nameIndex[dfltName], &customer)
+
+		r.Contains(emailIndex, dfltEmail)
+		r.EqualValues(emailIndex[dfltEmail], &customer)
+
+		r.Contains(phoneIndex, dfltPhone)
+		r.EqualValues(phoneIndex[dfltPhone], &customer)
 	})
 
 	t.Run("should reject a registration with invalid data", func(t *testing.T) {
@@ -49,7 +75,12 @@ func TestRegisterCustomer(t *testing.T) {
 			t.Run(c.Case, func(t *testing.T) {
 				r := require.New(t)
 
-				Init()
+				// Ensure that the repository is clean
+				customers = make([]*Customer, 0)
+				idIndex = make(map[string]*Customer)
+				nameIndex = make(map[string]*Customer)
+				emailIndex = make(map[string]*Customer)
+				phoneIndex = make(map[string]*Customer)
 
 				id, err := Register(c.Request)
 
@@ -79,17 +110,19 @@ func TestRegisterCustomer(t *testing.T) {
 			{"having same all data", RegisterRequest{dfltName, dfltEmail, dfltPhone}, []string{"duplicated name", "duplicated email", "duplicated phone"}},
 		}
 
-		request := RegisterRequest{
+		// Controlling internal state directly
+		customer := Customer{
+			ID:    "1",
 			Name:  dfltName,
 			Email: dfltEmail,
 			Phone: dfltPhone,
 		}
 
-		Init()
-
-		id, err := Register(request)
-		require.NoError(t, err)
-		require.NotEmpty(t, id)
+		customers = []*Customer{&customer}
+		idIndex = map[string]*Customer{"1": &customer}
+		nameIndex = map[string]*Customer{dfltName: &customer}
+		emailIndex = map[string]*Customer{dfltEmail: &customer}
+		phoneIndex = map[string]*Customer{dfltPhone: &customer}
 
 		for _, c := range cases {
 			t.Run(c.Case, func(t *testing.T) {
@@ -113,7 +146,7 @@ func TestRegisterCustomer(t *testing.T) {
 
 		Init()
 
-		// cause a problem
+		// Causing a problem
 		customers = nil
 		idIndex = nil
 		nameIndex = nil
