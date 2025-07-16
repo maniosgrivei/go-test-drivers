@@ -1,0 +1,71 @@
+reference_request: &reference_request
+  name: "John Due"
+  email: "john.due@somecompany.com"
+  phone: "+1 234 567 890"
+
+cases:
+  "when missing name":
+    request:
+      <<: *reference_request
+      name: ""
+    find_on_error:
+      - "validation error"
+      - "invalid name"
+
+  "when missing email":
+    request:
+      <<: *reference_request
+      email: ""
+    find_on_error:
+      - "validation error"
+      - "invalid email"
+
+  "when missing phone":
+    request:
+      <<: *reference_request
+      phone: ""
+    find_on_error:
+      - "validation error"
+      - "invalid phone"
+
+  "when missing name and email":
+    request:
+      <<: *reference_request
+      name: ""
+      email: ""
+    find_on_error:
+      - "validation error"
+      - "invalid name"
+      - "invalid email"
+
+  "when missing name and phone":
+    request:
+      <<: *reference_request
+      name: ""
+      phone: ""
+    find_on_error:
+      - "validation error"
+      - "invalid name"
+      - "invalid phone"
+
+  "when missing email and phone":
+    request:
+      <<: *reference_request
+      email: ""
+      phone: ""
+    find_on_error:
+      - "validation error"
+      - "invalid email"
+      - "invalid phone"
+
+  "when missing all data":
+    request:
+      <<: *reference_request
+      name: ""
+      email: ""
+      phone: ""
+    find_on_error:
+      - "validation error"
+      - "invalid name"
+      - "invalid email"
+      - "invalid phone"

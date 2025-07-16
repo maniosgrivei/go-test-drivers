@@ -3,6 +3,7 @@
 package customer
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -24,12 +25,25 @@ func ArrangeInternalsNoCustomerIsRegistered(t *testing.T) {
 
 // ArrangeInternalsSomeCustomersAreRegistered populates the repository with the
 // given customers.
-func ArrangeInternalsSomeCustomersAreRegistered(t *testing.T, customer ...*Customer) {
+//
+// It looks for the following attributes in each map:
+// - id: string
+// - name: string
+// - email: string
+// - phone: string
+func ArrangeInternalsSomeCustomersAreRegistered(t *testing.T, customerMaps ...map[string]any) {
 	t.Helper()
 
 	ArrangeInternalsNoCustomerIsRegistered(t)
 
-	for _, c := range customer {
+	for id, cm := range customerMaps {
+		c := getCustomerFromMap(t, cm)
+
+		if c.ID == "" {
+			c.ID = fmt.Sprintf("%d", id)
+			require.NotEmpty(t, c.ID)
+		}
+
 		customers = append(customers, c)
 		idIndex[c.ID] = c
 		nameIndex[c.Name] = c
@@ -38,8 +52,8 @@ func ArrangeInternalsSomeCustomersAreRegistered(t *testing.T, customer ...*Custo
 	}
 }
 
-// ArrangeInternalsSomethingCausingAProblem the internal state in a way that
-// function calls will results in a system error.
+// ArrangeInternalsSomethingCausingAProblem corrupts the internal state to
+// ensure subsequent function calls will result in a system error.
 func ArrangeInternalsSomethingCausingAProblem(t *testing.T) {
 	t.Helper()
 
@@ -53,74 +67,109 @@ func ArrangeInternalsSomethingCausingAProblem(t *testing.T) {
 //
 // Act
 
-// ActTryToRegisterACustomer registers a customer in the system by acting as a user.
-func ActTryToRegisterACustomer(t *testing.T, request *RegisterRequest) (id string, err error) {
+// ActTryToRegisterACustomer attempts to register a customer using data from a
+// map.
+//
+// It looks for the following optional attributes in the `request` map:
+// - name: string
+// - email: string
+// - phone: string
+//
+// It returns a map containing:
+// - id: string
+// - err: error
+func ActTryToRegisterACustomer(t *testing.T, request map[string]any) map[string]any {
 	t.Helper()
 
-	return Register(request)
+	name := getOptionalStringFromMap(t, request, "name")
+	email := getOptionalStringFromMap(t, request, "email")
+	phone := getOptionalStringFromMap(t, request, "phone")
+
+	id, err := Register(&RegisterRequest{Name: name, Email: email, Phone: phone})
+
+	// Update the request with the generated customer ID.
+	request["id"] = id
+
+	return map[string]any{
+		"id":  id,
+		"err": err,
+	}
 }
 
 //
 // Assert
 
 // AssertRegistrationShouldSucceed asserts that the registration was successful.
-func AssertRegistrationShouldSucceed(t *testing.T, id string, err error) {
+//
+// It looks for the following attributes in the `result` map:
+// - id: string
+// - err: error
+func AssertRegistrationShouldSucceed(t *testing.T, result map[string]any) {
 	t.Helper()
 
 	r := require.New(t)
 
-	r.NoError(err)
+	if errVal, ok := result["err"]; ok && errVal != nil {
+		r.NoError(errVal.(error))
+	}
+
+	id := getStringFromMap(t, result, "id")
 	r.NotEmpty(id)
 }
 
 // AssertRegistrationShouldFail asserts that the registration failed.
-func AssertRegistrationShouldFail(t *testing.T, id string, err error) {
+//
+// It looks for the following attributes in the `result` map:
+// - id: string
+// - err: error
+func AssertRegistrationShouldFail(t *testing.T, result map[string]any) {
 	t.Helper()
 
 	r := require.New(t)
 
-	r.Empty(id)
+	if idVal, ok := result["id"]; ok {
+		id, isString := idVal.(string)
+		r.True(isString)
+		r.Empty(id)
+	}
+
+	r.Contains(result, "err")
+	err, ok := result["err"].(error)
+	r.True(ok, "result 'err' field should be an error type")
 	r.Error(err)
-}
-
-// AssertRegistrationShouldFailWithError asserts that the registration failed
-// with the given error.
-func AssertRegistrationShouldFailWithError(t *testing.T, id string, err error, targetError error) {
-	t.Helper()
-
-	AssertRegistrationShouldFail(t, id, err)
-
-	require.ErrorIs(t, err, targetError)
 }
 
 // AssertRegistrationShouldFailWithMessage asserts that the registration failed
 // with the given message(s).
-func AssertRegistrationShouldFailWithMessage(t *testing.T, id string, err error, targetMessage ...string) {
+//
+// It looks for the following attributes in the `result` map:
+// - id: string
+// - err: error
+func AssertRegistrationShouldFailWithMessage(t *testing.T, result map[string]any, targetMessages ...string) {
 	t.Helper()
 
-	AssertRegistrationShouldFail(t, id, err)
+	AssertRegistrationShouldFail(t, result)
 
-	for _, msg := range targetMessage {
-		require.Contains(t, err.Error(), msg)
+	errorMessage := result["err"].(error).Error()
+	for _, msg := range targetMessages {
+		require.Contains(t, errorMessage, msg)
 	}
-}
-
-// AssertRegistrationShouldFailWithErrorAndMessage asserts that the
-// registration failed with the given error and message(s).
-func AssertRegistrationShouldFailWithErrorAndMessage(t *testing.T, id string, err error, targetError error, targetMessage ...string) {
-	t.Helper()
-
-	AssertRegistrationShouldFailWithError(t, id, err, targetError)
-
-	AssertRegistrationShouldFailWithMessage(t, id, err, targetMessage...)
 }
 
 // AssertInternalsCustomerShouldBeProperlyRegistered asserts that the customer
 // is properly registered in the internal data structures.
-func AssertInternalsCustomerShouldBeProperlyRegistered(t *testing.T, customer *Customer) {
+//
+// It looks for the following attributes in the `customerData` map:
+// - id: string
+// - name: string
+// - email: string
+// - phone: string
+func AssertInternalsCustomerShouldBeProperlyRegistered(t *testing.T, customerData map[string]any) {
 	t.Helper()
 
 	r := require.New(t)
+
+	customer := getCustomerFromMap(t, customerData)
 
 	r.True(sliceContainsCustomer(customers, customer))
 
@@ -138,11 +187,19 @@ func AssertInternalsCustomerShouldBeProperlyRegistered(t *testing.T, customer *C
 }
 
 // AssertInternalsCustomerShouldNotBeRegistered asserts that the customer is not
-// properly registered in the internal data structures.
-func AssertInternalsCustomerShouldNotBeRegistered(t *testing.T, customer *Customer) {
+// present in the internal data structures.
+//
+// It looks for the following optional attributes in the `customerData` map:
+// - id: string
+// - name: string
+// - email: string
+// - phone: string
+func AssertInternalsCustomerShouldNotBeRegistered(t *testing.T, customerData map[string]any) {
 	t.Helper()
 
 	r := require.New(t)
+
+	customer := getCustomerFromMap(t, customerData)
 
 	r.False(sliceContainsCustomer(customers, customer))
 	r.False(mapContainsCustomer(idIndex, customer))
@@ -153,16 +210,71 @@ func AssertInternalsCustomerShouldNotBeRegistered(t *testing.T, customer *Custom
 
 // AssertInternalsCustomerShouldNotBeDuplicated asserts that the customer is not
 // duplicated in the internal data structures. IDs are not compared.
-func AssertInternalsCustomerShouldNotBeDuplicated(t *testing.T, customer *Customer) {
+func AssertInternalsCustomerShouldNotBeDuplicated(t *testing.T, customerData map[string]any) {
 	t.Helper()
 
 	r := require.New(t)
+
+	customer := getCustomerFromMap(t, customerData)
 
 	r.LessOrEqual(sliceCountCustomeOccurrences(customers, customer), 1)
 	r.LessOrEqual(mapCountCustomeOccurrences(idIndex, customer), 1)
 	r.LessOrEqual(mapCountCustomeOccurrences(nameIndex, customer), 1)
 	r.LessOrEqual(mapCountCustomeOccurrences(emailIndex, customer), 1)
 	r.LessOrEqual(mapCountCustomeOccurrences(phoneIndex, customer), 1)
+}
+
+//
+// Internal Helpers
+
+// getCustomerFromMap extracts a customer from a map.
+//
+// It looks for the following attributes in the `data` map:
+// - id: string (optional)
+// - name: string
+// - email: string
+// - phone: string
+func getCustomerFromMap(t *testing.T, data map[string]any) *Customer {
+	t.Helper()
+
+	return &Customer{
+		ID:    getOptionalStringFromMap(t, data, "id"),
+		Name:  getStringFromMap(t, data, "name"),
+		Email: getStringFromMap(t, data, "email"),
+		Phone: getStringFromMap(t, data, "phone"),
+	}
+}
+
+// getStringFromMap safely extracts a required string value from a map.
+func getStringFromMap(t *testing.T, data map[string]any, key string) string {
+	t.Helper()
+	r := require.New(t)
+
+	r.Contains(data, key, "map should contain required key '%s'", key)
+	val, ok := data[key]
+	r.True(ok)
+
+	strVal, ok := val.(string)
+	r.True(ok, "value for key '%s' should be a string", key)
+
+	return strVal
+}
+
+// getOptionalStringFromMap safely extracts an optional string value from a map.
+// It returns an empty string if the key does not exist.
+func getOptionalStringFromMap(t *testing.T, data map[string]any, key string) string {
+	t.Helper()
+	r := require.New(t)
+
+	val, ok := data[key]
+	if !ok {
+		return ""
+	}
+
+	strVal, ok := val.(string)
+	r.True(ok, "value for key '%s' should be a string", key)
+
+	return strVal
 }
 
 //

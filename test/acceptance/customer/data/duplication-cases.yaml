@@ -1,0 +1,59 @@
+reference_request: &reference_request
+  name: "John Due"
+  email: "john.due@somecompany.com"
+  phone: "+1 234 567 890"
+
+cases:
+  "when having same name":
+    request:
+      <<: *reference_request
+      email: "didi@dada.com"
+      phone: "+1 098 765 432"
+    find_on_error:
+      - "duplication error"
+      - "duplicated name"
+
+  "when having same email":
+    request:
+      <<: *reference_request
+      name: "Didi Dada"
+      phone: "+1 098 765 432"
+    find_on_error:
+      - "duplication error"
+      - "duplicated email"
+
+  "when having same phone":
+    request:
+      <<: *reference_request
+      name: "Didi Dada"
+      email: "didi@dada.com"
+    find_on_error:
+      - "duplication error"
+      - "duplicated phone"
+
+  "when having same name and email":
+    request:
+      <<: *reference_request
+      phone: "+1 098 765 432"
+    find_on_error:
+      - "duplication error"
+      - "duplicated name"
+      - "duplicated email"
+
+  "when having same name and phone":
+    request:
+      <<: *reference_request
+      email: "didi@dada.com"
+    find_on_error:
+      - "duplication error"
+      - "duplicated name"
+      - "duplicated phone"
+
+  "when having same email and phone":
+    request:
+      <<: *reference_request
+      name: "Didi Dada"
+    find_on_error:
+      - "duplication error"
+      - "duplicated email"
+      - "duplicated phone"
