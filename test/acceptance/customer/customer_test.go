@@ -1,151 +1,107 @@
 package customer_test
 
 import (
+	"os"
 	"testing"
 
 	"github.com/maniosgrivei/go-test-drivers/customer"
-)
 
-const (
-	dfltName  = "John Due"
-	dfltEmail = "john.due@somecompany.com"
-	dfltPhone = "+1 234 567 890"
+	"github.com/stretchr/testify/require"
+	"gopkg.in/yaml.v3"
 )
 
 func TestRegisterCustomer(t *testing.T) {
 	t.Run("should register a customer with valid data", func(t *testing.T) {
+		referenceCustomer := loadYAMLTestData(t, "./data/reference-customer.yaml")
+
 		// Given that
 		customer.ArrangeInternalsNoCustomerIsRegistered(t)
 
 		// When we
-		id, err := customer.ActTryToRegisterACustomer(t, &customer.RegisterRequest{
-			Name:  dfltName,
-			Email: dfltEmail,
-			Phone: dfltPhone,
-		})
+		result := customer.ActTryToRegisterACustomer(t, referenceCustomer)
 		// with valid data
 
 		// Then the
-		customer.AssertRegistrationShouldSucceed(t, id, err)
+		customer.AssertRegistrationShouldSucceed(t, result)
 
 		// And the
-		customer.AssertInternalsCustomerShouldBeProperlyRegistered(t, &customer.Customer{
-			ID:    id,
-			Name:  dfltName,
-			Email: dfltEmail,
-			Phone: dfltPhone,
-		})
+		customer.AssertInternalsCustomerShouldBeProperlyRegistered(t, referenceCustomer)
 	})
 
 	t.Run("should reject a registration with invalid data", func(t *testing.T) {
-		cases := []struct {
-			Case        string
-			Request     *customer.RegisterRequest
-			FindOnError []string
-		}{
-			{"when missing name", &customer.RegisterRequest{Name: "", Email: dfltEmail, Phone: dfltPhone}, []string{"invalid name"}},
-			{"when missing email", &customer.RegisterRequest{Name: dfltName, Email: "", Phone: dfltPhone}, []string{"invalid email"}},
-			{"when missing phone", &customer.RegisterRequest{Name: dfltName, Email: dfltEmail, Phone: ""}, []string{"invalid phone"}},
-			{"when missing name and email", &customer.RegisterRequest{Name: "", Email: "", Phone: dfltPhone}, []string{"invalid name", "invalid email"}},
-			{"when missing name and phone", &customer.RegisterRequest{Name: "", Email: dfltEmail, Phone: ""}, []string{"invalid name", "invalid phone"}},
-			{"when missing email and phone", &customer.RegisterRequest{Name: dfltName, Email: "", Phone: ""}, []string{"invalid email", "invalid phone"}},
-			{"when missing all data", &customer.RegisterRequest{Name: "", Email: "", Phone: ""}, []string{"invalid name", "invalid email", "invalid phone"}},
-		}
+		testData := loadYAMLTestData(t, "./data/invalidation-cases.yaml")
 
-		for _, c := range cases {
-			t.Run(c.Case, func(t *testing.T) {
+		cases := extractCases(t, testData)
+		for title, bundle := range cases {
+			caseData := bundleToCaseData(t, bundle)
+			request := extractRequest(t, caseData)
+			findOnError := extractFindOnError(t, caseData)
+
+			t.Run(title, func(t *testing.T) {
 				// Given that
 				customer.ArrangeInternalsNoCustomerIsRegistered(t)
 
 				// When we
-				id, err := customer.ActTryToRegisterACustomer(t, c.Request)
+				result := customer.ActTryToRegisterACustomer(t, request)
 				// with invalid data
 
 				// Then the
-				customer.AssertRegistrationShouldFailWithErrorAndMessage(t, id, err, customer.ErrValidation, c.FindOnError...)
+				customer.AssertRegistrationShouldFailWithMessage(t, result, findOnError...)
 
 				// And the
-				customer.AssertInternalsCustomerShouldNotBeRegistered(t, &customer.Customer{
-					ID:    "1",
-					Name:  c.Request.Name,
-					Email: c.Request.Email,
-					Phone: c.Request.Phone,
-				})
+				customer.AssertInternalsCustomerShouldNotBeRegistered(t, request)
 			})
 		}
 	})
 
 	t.Run("should reject a registration with duplicated data", func(t *testing.T) {
-		cases := []struct {
-			Case        string
-			Request     *customer.RegisterRequest
-			FindOnError []string
-		}{
-			{"having same name", &customer.RegisterRequest{Name: dfltName, Email: "didi@dada.com", Phone: "+1 098 765 432"}, []string{"duplicated name"}},
-			{"having same email", &customer.RegisterRequest{Name: "Didi Dada", Email: dfltEmail, Phone: "+1 098 765 432"}, []string{"duplicated email"}},
-			{"having same phone", &customer.RegisterRequest{Name: "Didi Dada", Email: "didi@dada.com", Phone: dfltPhone}, []string{"duplicated phone"}},
-			{"having same name and email", &customer.RegisterRequest{Name: dfltName, Email: dfltEmail, Phone: "+1 098 765 432"}, []string{"duplicated name", "duplicated email"}},
-			{"having same name and phone", &customer.RegisterRequest{Name: dfltName, Email: "didi@dada.com", Phone: dfltPhone}, []string{"duplicated name", "duplicated phone"}},
-			{"having same email and phone", &customer.RegisterRequest{Name: "Didi Dada", Email: dfltEmail, Phone: dfltPhone}, []string{"duplicated email", "duplicated phone"}},
-		}
+		testData := loadYAMLTestData(t, "./data/duplication-cases.yaml")
 
-		for _, c := range cases {
-			t.Run(c.Case, func(t *testing.T) {
+		referenceRequest := extractReferenceRequest(t, testData)
+
+		cases := extractCases(t, testData)
+		for title, bundle := range cases {
+			caseData := bundleToCaseData(t, bundle)
+			request := extractRequest(t, caseData)
+			findOnError := extractFindOnError(t, caseData)
+
+			t.Run(title, func(t *testing.T) {
 				// Given that
-				customer.ArrangeInternalsSomeCustomersAreRegistered(t, &customer.Customer{
-					ID:    "1",
-					Name:  dfltName,
-					Email: dfltEmail,
-					Phone: dfltPhone,
-				})
+				customer.ArrangeInternalsSomeCustomersAreRegistered(t, referenceRequest)
 
 				// When we
-				id, err := customer.ActTryToRegisterACustomer(t, c.Request)
+				result := customer.ActTryToRegisterACustomer(t, request)
 				// with duplicated data
 
 				// Then the
-				customer.AssertRegistrationShouldFailWithErrorAndMessage(t, id, err, customer.ErrDuplication, c.FindOnError...)
+				customer.AssertRegistrationShouldFailWithMessage(t, result, findOnError...)
 
 				// And the
-				customer.AssertInternalsCustomerShouldNotBeRegistered(t, &customer.Customer{
-					ID:    "2",
-					Name:  c.Request.Name,
-					Email: c.Request.Email,
-					Phone: c.Request.Phone,
-				})
+				customer.AssertInternalsCustomerShouldNotBeRegistered(t, request)
 			})
 		}
 	})
 
 	t.Run("should not register the same user twice", func(t *testing.T) {
+		referenceCustomer := loadYAMLTestData(t, "./data/reference-customer.yaml")
+
 		// Given that
-		customer.ArrangeInternalsSomeCustomersAreRegistered(t, &customer.Customer{
-			ID:    "1",
-			Name:  dfltName,
-			Email: dfltEmail,
-			Phone: dfltPhone,
-		})
+		customer.ArrangeInternalsSomeCustomersAreRegistered(t, referenceCustomer)
 
 		// When we
-		id, err := customer.ActTryToRegisterACustomer(t, &customer.RegisterRequest{
-			Name:  dfltName,
-			Email: dfltEmail,
-			Phone: dfltPhone,
-		})
+		result := customer.ActTryToRegisterACustomer(t, referenceCustomer)
 		// twice
 
 		// Then the
-		customer.AssertRegistrationShouldFailWithErrorAndMessage(t, id, err, customer.ErrDuplication, "duplicated name", "duplicated email", "duplicated phone")
+		customer.AssertRegistrationShouldFailWithMessage(t, result, customer.ErrDuplication.Error(), "duplicated name", "duplicated email", "duplicated phone")
 
 		// And
-		customer.AssertInternalsCustomerShouldNotBeDuplicated(t, &customer.Customer{
-			Name:  dfltName,
-			Email: dfltEmail,
-			Phone: dfltPhone,
-		})
+		customer.AssertInternalsCustomerShouldNotBeDuplicated(t, referenceCustomer)
 	})
 
 	t.Run("should return a generic system error on failure", func(t *testing.T) {
+		referenceCustomer := loadYAMLTestData(t, "./data/reference-customer.yaml")
+
 		// Given that
 		customer.ArrangeInternalsNoCustomerIsRegistered(t)
 
@@ -153,22 +109,112 @@ func TestRegisterCustomer(t *testing.T) {
 		customer.ArrangeInternalsSomethingCausingAProblem(t)
 
 		// When we
-		id, err := customer.ActTryToRegisterACustomer(t, &customer.RegisterRequest{
-			Name:  dfltName,
-			Email: dfltEmail,
-			Phone: dfltPhone,
-		})
+		result := customer.ActTryToRegisterACustomer(t, referenceCustomer)
 		// with valid data
 
 		// Them the
-		customer.AssertRegistrationShouldFailWithErrorAndMessage(t, id, err, customer.ErrSystem, "contact support")
+		customer.AssertRegistrationShouldFailWithMessage(t, result, "system error", "contact support")
 
 		// And the
-		customer.AssertInternalsCustomerShouldNotBeRegistered(t, &customer.Customer{
-			ID:    "1",
-			Name:  dfltName,
-			Email: dfltEmail,
-			Phone: dfltPhone,
-		})
+		customer.AssertInternalsCustomerShouldNotBeRegistered(t, referenceCustomer)
 	})
+}
+
+// loadYAMLTestData loads content of a YAML test data file into a
+// `map[string]any`.
+func loadYAMLTestData(t *testing.T, path string) map[string]any {
+	t.Helper()
+
+	r := require.New(t)
+
+	f, err := os.Open(path)
+	r.NoError(err)
+	r.NotNil(f)
+	defer f.Close()
+
+	var td map[string]any
+	err = yaml.NewDecoder(f).Decode(&td)
+	r.NoError(err)
+	r.NotNil(r)
+
+	return td
+}
+
+// extractReferenceRequest extracts the reference request from the given test
+// data.
+//
+// It looks for the following attributes:
+// - reference_request: map[string]any
+func extractReferenceRequest(t *testing.T, testData map[string]any) map[string]any {
+	t.Helper()
+
+	r := require.New(t)
+
+	r.Contains(testData, "reference_request")
+	r.NotNil(testData["reference_request"])
+	r.IsType(map[string]any{}, testData["reference_request"])
+
+	return testData["reference_request"].(map[string]any)
+}
+
+// extractCases extracts the test cases from the given test data.
+//
+// It looks for the following attributes:
+// - cases: map[string]any
+func extractCases(t *testing.T, testData map[string]any) map[string]any {
+	r := require.New(t)
+
+	r.Contains(testData, "cases")
+	r.NotNil(testData["cases"])
+	r.IsType(map[string]any{}, testData["cases"])
+
+	return testData["cases"].(map[string]any)
+}
+
+// bundleToCaseData converts a bundle (any) to a map[string]any.
+func bundleToCaseData(t *testing.T, bundle any) map[string]any {
+	r := require.New(t)
+
+	r.NotNil(bundle)
+	r.IsType(map[string]any{}, bundle)
+	caseData := bundle.(map[string]any)
+
+	return caseData
+}
+
+// extractRequest extracts the request from the given case data.
+//
+// It looks for the following attributes:
+// - request: map[string]any
+func extractRequest(t *testing.T, caseData map[string]any) map[string]any {
+	r := require.New(t)
+
+	r.Contains(caseData, "request")
+	r.NotNil(caseData["request"])
+	r.IsType(map[string]any{}, caseData["request"])
+
+	return caseData["request"].(map[string]any)
+}
+
+// extractFindOnError extracts the `find_on_error` attribute from the given case
+// data.
+//
+// It looks for the following attributes:
+// - find_on_error: []string
+func extractFindOnError(t *testing.T, caseData map[string]any) []string {
+	r := require.New(t)
+
+	r.Contains(caseData, "find_on_error")
+	r.NotNil(caseData["find_on_error"])
+	r.IsType([]any{}, caseData["find_on_error"])
+
+	vals := caseData["find_on_error"].([]any)
+
+	findOnErrors := make([]string, len(vals))
+	for i, val := range vals {
+		r.IsType("", val)
+		findOnErrors[i] = val.(string)
+	}
+
+	return findOnErrors
 }
