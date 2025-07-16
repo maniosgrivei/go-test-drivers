@@ -3,8 +3,8 @@
 package customer
 
 import (
-	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -36,11 +36,13 @@ func ArrangeInternalsSomeCustomersAreRegistered(t *testing.T, customerMaps ...ma
 
 	ArrangeInternalsNoCustomerIsRegistered(t)
 
-	for id, cm := range customerMaps {
+	for _, cm := range customerMaps {
 		c := getCustomerFromMap(t, cm)
 
 		if c.ID == "" {
-			c.ID = fmt.Sprintf("%d", id)
+			var err error
+			c.ID, err = GenerateID(c.Name, time.Now())
+			require.NoError(t, err)
 			require.NotEmpty(t, c.ID)
 		}
 
