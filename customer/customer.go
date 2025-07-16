@@ -3,6 +3,7 @@ package customer
 import (
 	"errors"
 	"fmt"
+	"time"
 )
 
 // Package-level errors for customer registration.
@@ -53,14 +54,13 @@ func Register(request *RegisterRequest) (id string, err error) {
 		return "", ErrSystem
 	}
 
-	id = fmt.Sprintf("%d", len(customers)+1)
-
 	if err = validateRegisterRequest(request); err != nil {
 		return "", fmt.Errorf("%w: %w", ErrValidation, err)
 	}
 
-	if err = checkDuplication(request); err != nil {
-		return "", fmt.Errorf("%w: %w", ErrDuplication, err)
+	id, err = GenerateID(request.Name, time.Now())
+	if err != nil {
+		return "", err
 	}
 
 	customer := &Customer{
@@ -68,6 +68,10 @@ func Register(request *RegisterRequest) (id string, err error) {
 		Name:  request.Name,
 		Email: request.Email,
 		Phone: request.Phone,
+	}
+
+	if err = checkDuplication(customer); err != nil {
+		return "", fmt.Errorf("%w: %w", ErrDuplication, err)
 	}
 
 	customers = append(customers, customer)
@@ -99,21 +103,25 @@ func validateRegisterRequest(request *RegisterRequest) error {
 	return errors.Join(errs...)
 }
 
-// checkDuplication checks if the name, email, or phone in the request already
-// exist in the repository.
-func checkDuplication(request *RegisterRequest) error {
+// checkDuplication checks if the id, name, email, or phone in the request
+// already exist in the repository.
+func checkDuplication(customer *Customer) error {
 	var errs []error
 
-	if _, found := nameIndex[request.Name]; found {
-		errs = append(errs, fmt.Errorf("duplicated name: '%s'", request.Name))
+	if _, found := idIndex[customer.ID]; found {
+		errs = append(errs, fmt.Errorf("duplicated id: '%s'", customer.ID))
 	}
 
-	if _, found := emailIndex[request.Email]; found {
-		errs = append(errs, fmt.Errorf("duplicated email: '%s'", request.Email))
+	if _, found := nameIndex[customer.Name]; found {
+		errs = append(errs, fmt.Errorf("duplicated name: '%s'", customer.Name))
 	}
 
-	if _, found := phoneIndex[request.Phone]; found {
-		errs = append(errs, fmt.Errorf("duplicated phone: '%s'", request.Phone))
+	if _, found := emailIndex[customer.Email]; found {
+		errs = append(errs, fmt.Errorf("duplicated email: '%s'", customer.Email))
+	}
+
+	if _, found := phoneIndex[customer.Phone]; found {
+		errs = append(errs, fmt.Errorf("duplicated phone: '%s'", customer.Phone))
 	}
 
 	return errors.Join(errs...)

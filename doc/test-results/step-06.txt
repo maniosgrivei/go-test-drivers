@@ -1,0 +1,176 @@
+Running tool: /usr/bin/go test -timeout 30s -tags test -run ^TestRegisterCustomer$ github.com/maniosgrivei/go-test-drivers/test/acceptance/customer
+
+=== RUN   TestRegisterCustomer
+=== RUN   TestRegisterCustomer/should_register_a_customer_with_valid_data
+--- PASS: TestRegisterCustomer/should_register_a_customer_with_valid_data (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_email
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_email (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_phone
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_phone (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_name_and_email
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_name_and_email (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_name_and_phone
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_name_and_phone (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_email_and_phone
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_email_and_phone (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_all_data
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_all_data (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_name
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_name (0.00s)
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_duplicated_data
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_duplicated_data/when_having_same_email
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_duplicated_data/when_having_same_email (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_duplicated_data/when_having_same_phone
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_duplicated_data/when_having_same_phone (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_duplicated_data/when_having_same_name_and_email
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_duplicated_data/when_having_same_name_and_email (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_duplicated_data/when_having_same_name_and_phone
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_duplicated_data/when_having_same_name_and_phone (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_duplicated_data/when_having_same_email_and_phone
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_duplicated_data/when_having_same_email_and_phone (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_duplicated_data/when_having_same_name
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_duplicated_data/when_having_same_name (0.00s)
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_duplicated_data (0.00s)
+=== RUN   TestRegisterCustomer/should_not_register_the_same_user_twice
+--- PASS: TestRegisterCustomer/should_not_register_the_same_user_twice (0.00s)
+=== RUN   TestRegisterCustomer/should_return_a_generic_system_error_on_failure
+--- PASS: TestRegisterCustomer/should_return_a_generic_system_error_on_failure (0.00s)
+--- PASS: TestRegisterCustomer (0.01s)
+PASS
+ok      github.com/maniosgrivei/go-test-drivers/test/acceptance/customer        0.014s
+
+-----
+
+Running tool: /usr/bin/go test -timeout 30s -tags test -run ^TestUnixsMilliBase36$ github.com/maniosgrivei/go-test-drivers/customer
+
+=== RUN   TestUnixsMilliBase36
+=== RUN   TestUnixsMilliBase36/1_milli
+--- PASS: TestUnixsMilliBase36/1_milli (0.00s)
+=== RUN   TestUnixsMilliBase36/2_milli
+--- PASS: TestUnixsMilliBase36/2_milli (0.00s)
+=== RUN   TestUnixsMilliBase36/3_milli
+--- PASS: TestUnixsMilliBase36/3_milli (0.00s)
+=== RUN   TestUnixsMilliBase36/10_milli
+--- PASS: TestUnixsMilliBase36/10_milli (0.00s)
+=== RUN   TestUnixsMilliBase36/35_milli
+--- PASS: TestUnixsMilliBase36/35_milli (0.00s)
+=== RUN   TestUnixsMilliBase36/36_milli
+--- PASS: TestUnixsMilliBase36/36_milli (0.00s)
+=== RUN   TestUnixsMilliBase36/march_15_2023_00:00:00
+--- PASS: TestUnixsMilliBase36/march_15_2023_00:00:00 (0.00s)
+=== RUN   TestUnixsMilliBase36/march_15_2023_00:00:00.001
+--- PASS: TestUnixsMilliBase36/march_15_2023_00:00:00.001 (0.00s)
+=== RUN   TestUnixsMilliBase36/march_15_2023_00:00:00.035
+--- PASS: TestUnixsMilliBase36/march_15_2023_00:00:00.035 (0.00s)
+=== RUN   TestUnixsMilliBase36/march_15_2023_00:00:00.036
+--- PASS: TestUnixsMilliBase36/march_15_2023_00:00:00.036 (0.00s)
+--- PASS: TestUnixsMilliBase36 (0.00s)
+PASS
+ok      github.com/maniosgrivei/go-test-drivers/customer        0.009s
+
+-----
+
+Running tool: /usr/bin/go test -timeout 30s -tags test -run ^TestJulianDate$ github.com/maniosgrivei/go-test-drivers/customer
+
+=== RUN   TestJulianDate
+=== RUN   TestJulianDate/january_2,_2006
+--- PASS: TestJulianDate/january_2,_2006 (0.00s)
+=== RUN   TestJulianDate/february_29,_2008_(leap_year)
+--- PASS: TestJulianDate/february_29,_2008_(leap_year) (0.00s)
+=== RUN   TestJulianDate/december_31,_2010
+--- PASS: TestJulianDate/december_31,_2010 (0.00s)
+=== RUN   TestJulianDate/september_15,_2023
+--- PASS: TestJulianDate/september_15,_2023 (0.00s)
+=== RUN   TestJulianDate/august_1,_1999
+--- PASS: TestJulianDate/august_1,_1999 (0.00s)
+=== RUN   TestJulianDate/july_4,_1776
+--- PASS: TestJulianDate/july_4,_1776 (0.00s)
+--- PASS: TestJulianDate (0.00s)
+PASS
+ok      github.com/maniosgrivei/go-test-drivers/customer        0.007s
+
+-----
+
+Running tool: /usr/bin/go test -timeout 30s -tags test -run ^TestCompleteConsonants$ github.com/maniosgrivei/go-test-drivers/customer
+
+=== RUN   TestCompleteConsonants
+=== RUN   TestCompleteConsonants/john_due
+--- PASS: TestCompleteConsonants/john_due (0.00s)
+=== RUN   TestCompleteConsonants/jee_dee
+--- PASS: TestCompleteConsonants/jee_dee (0.00s)
+=== RUN   TestCompleteConsonants/oei_uuae
+--- PASS: TestCompleteConsonants/oei_uuae (0.00s)
+=== RUN   TestCompleteConsonants/joe_ede
+--- PASS: TestCompleteConsonants/joe_ede (0.00s)
+=== RUN   TestCompleteConsonants/jo_edde
+--- PASS: TestCompleteConsonants/jo_edde (0.00s)
+=== RUN   TestCompleteConsonants/joe_edd
+--- PASS: TestCompleteConsonants/joe_edd (0.00s)
+=== RUN   TestCompleteConsonants/oee_jdd
+--- PASS: TestCompleteConsonants/oee_jdd (0.00s)
+--- PASS: TestCompleteConsonants (0.00s)
+PASS
+ok      github.com/maniosgrivei/go-test-drivers/customer        0.008s
+
+-----
+
+Running tool: /usr/bin/go test -timeout 30s -tags test -run ^TestExtractAndCapsConsonants$ github.com/maniosgrivei/go-test-drivers/customer
+
+=== RUN   TestExtractAndCapsConsonants
+=== RUN   TestExtractAndCapsConsonants/empty_string
+--- PASS: TestExtractAndCapsConsonants/empty_string (0.00s)
+=== RUN   TestExtractAndCapsConsonants/only_vowels
+--- PASS: TestExtractAndCapsConsonants/only_vowels (0.00s)
+=== RUN   TestExtractAndCapsConsonants/only_consonants
+--- PASS: TestExtractAndCapsConsonants/only_consonants (0.00s)
+=== RUN   TestExtractAndCapsConsonants/john_due
+--- PASS: TestExtractAndCapsConsonants/john_due (0.00s)
+=== RUN   TestExtractAndCapsConsonants/peerpoint_peperontino
+--- PASS: TestExtractAndCapsConsonants/peerpoint_peperontino (0.00s)
+--- PASS: TestExtractAndCapsConsonants (0.00s)
+PASS
+ok      github.com/maniosgrivei/go-test-drivers/customer        0.007s
+
+-----
+
+Running tool: /usr/bin/go test -timeout 30s -tags test -run ^TestPurgeAndCapsNames$ github.com/maniosgrivei/go-test-drivers/customer
+
+=== RUN   TestPurgeAndCapsNames
+=== RUN   TestPurgeAndCapsNames/empty_string
+--- PASS: TestPurgeAndCapsNames/empty_string (0.00s)
+=== RUN   TestPurgeAndCapsNames/simple_name
+--- PASS: TestPurgeAndCapsNames/simple_name (0.00s)
+=== RUN   TestPurgeAndCapsNames/shuffled_alphabet_with_numbers_and_symbols
+--- PASS: TestPurgeAndCapsNames/shuffled_alphabet_with_numbers_and_symbols (0.00s)
+=== RUN   TestPurgeAndCapsNames/letters_with_accents
+--- PASS: TestPurgeAndCapsNames/letters_with_accents (0.00s)
+--- PASS: TestPurgeAndCapsNames (0.00s)
+PASS
+ok      github.com/maniosgrivei/go-test-drivers/customer        0.008s
+
+-----
+
+Running tool: /usr/bin/go test -timeout 30s -tags test -run ^TestGenerateID$ github.com/maniosgrivei/go-test-drivers/customer
+
+=== RUN   TestGenerateID
+=== RUN   TestGenerateID/john_doe_jan_2_2006
+--- PASS: TestGenerateID/john_doe_jan_2_2006 (0.00s)
+=== RUN   TestGenerateID/jane_doe_feb_14_2010
+--- PASS: TestGenerateID/jane_doe_feb_14_2010 (0.00s)
+=== RUN   TestGenerateID/peter_pan_dec_25_1999
+--- PASS: TestGenerateID/peter_pan_dec_25_1999 (0.00s)
+=== RUN   TestGenerateID/alice_wonderland_jul_4_1976
+--- PASS: TestGenerateID/alice_wonderland_jul_4_1976 (0.00s)
+=== RUN   TestGenerateID/bob_the_builder_sep_1_2023
+--- PASS: TestGenerateID/bob_the_builder_sep_1_2023 (0.00s)
+=== RUN   TestGenerateID/david_copperfield_may_1_1970
+--- PASS: TestGenerateID/david_copperfield_may_1_1970 (0.00s)
+=== RUN   TestGenerateID/eve_harrington_aug_12_1980
+--- PASS: TestGenerateID/eve_harrington_aug_12_1980 (0.00s)
+=== RUN   TestGenerateID/xasptrto_norman_jan_01_1970
+--- PASS: TestGenerateID/xasptrto_norman_jan_01_1970 (0.00s)
+--- PASS: TestGenerateID (0.00s)
+PASS
+ok      github.com/maniosgrivei/go-test-drivers/customer        0.008s
