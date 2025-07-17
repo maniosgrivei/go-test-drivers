@@ -21,23 +21,24 @@ type Customer struct {
 	Phone string
 }
 
-// Package-level variables to store customers in-memory.
-var (
+// CustomerService manages customer-related operations.
+type CustomerService struct {
 	customers  []*Customer
 	idIndex    map[string]*Customer
 	nameIndex  map[string]*Customer
 	emailIndex map[string]*Customer
 	phoneIndex map[string]*Customer
-)
+}
 
-// Init initializes the in-memory customer repository, clearing all existing
-// data.
-func Init() {
-	customers = make([]*Customer, 0)
-	idIndex = make(map[string]*Customer)
-	nameIndex = make(map[string]*Customer)
-	emailIndex = make(map[string]*Customer)
-	phoneIndex = make(map[string]*Customer)
+// NewCustomerService creates a new instance of CustomerService.
+func NewCustomerService() *CustomerService {
+	return &CustomerService{
+		customers:  make([]*Customer, 0),
+		idIndex:    make(map[string]*Customer),
+		nameIndex:  make(map[string]*Customer),
+		emailIndex: make(map[string]*Customer),
+		phoneIndex: make(map[string]*Customer),
+	}
 }
 
 // RegisterRequest carries the required data for registering a new customer.
@@ -49,8 +50,8 @@ type RegisterRequest struct {
 
 // Register validates the request, checks for duplicates, and adds a new
 // customer to the repository.
-func Register(request *RegisterRequest) (id string, err error) {
-	if customers == nil || nameIndex == nil || emailIndex == nil || phoneIndex == nil {
+func (s *CustomerService) Register(request *RegisterRequest) (id string, err error) {
+	if s.customers == nil || s.nameIndex == nil || s.emailIndex == nil || s.phoneIndex == nil {
 		return "", ErrSystem
 	}
 
@@ -70,57 +71,37 @@ func Register(request *RegisterRequest) (id string, err error) {
 		Phone: request.Phone,
 	}
 
-	if err = checkDuplication(customer); err != nil {
+	if err = s.checkDuplication(customer); err != nil {
 		return "", fmt.Errorf("%w: %w", ErrDuplication, err)
 	}
 
-	customers = append(customers, customer)
-	idIndex[customer.ID] = customer
-	nameIndex[customer.Name] = customer
-	emailIndex[customer.Email] = customer
-	phoneIndex[customer.Phone] = customer
+	s.customers = append(s.customers, customer)
+	s.idIndex[customer.ID] = customer
+	s.nameIndex[customer.Name] = customer
+	s.emailIndex[customer.Email] = customer
+	s.phoneIndex[customer.Phone] = customer
 
 	return id, nil
 }
 
-// validateRegisterRequest checks that all required fields in the request are
-// valid.
-func validateRegisterRequest(request *RegisterRequest) error {
-	var errs []error
-
-	if request.Name == "" {
-		errs = append(errs, fmt.Errorf("invalid name: '%s'", request.Name))
-	}
-
-	if request.Email == "" {
-		errs = append(errs, fmt.Errorf("invalid email: '%s'", request.Email))
-	}
-
-	if request.Phone == "" {
-		errs = append(errs, fmt.Errorf("invalid phone: '%s'", request.Phone))
-	}
-
-	return errors.Join(errs...)
-}
-
 // checkDuplication checks if the id, name, email, or phone in the request
 // already exist in the repository.
-func checkDuplication(customer *Customer) error {
+func (s *CustomerService) checkDuplication(customer *Customer) error {
 	var errs []error
 
-	if _, found := idIndex[customer.ID]; found {
+	if _, found := s.idIndex[customer.ID]; found {
 		errs = append(errs, fmt.Errorf("duplicated id: '%s'", customer.ID))
 	}
 
-	if _, found := nameIndex[customer.Name]; found {
+	if _, found := s.nameIndex[customer.Name]; found {
 		errs = append(errs, fmt.Errorf("duplicated name: '%s'", customer.Name))
 	}
 
-	if _, found := emailIndex[customer.Email]; found {
+	if _, found := s.emailIndex[customer.Email]; found {
 		errs = append(errs, fmt.Errorf("duplicated email: '%s'", customer.Email))
 	}
 
-	if _, found := phoneIndex[customer.Phone]; found {
+	if _, found := s.phoneIndex[customer.Phone]; found {
 		errs = append(errs, fmt.Errorf("duplicated phone: '%s'", customer.Phone))
 	}
 

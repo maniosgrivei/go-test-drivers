@@ -11,6 +11,8 @@ import (
 )
 
 func TestRegisterCustomer(t *testing.T) {
+	customerTestDriver := customer.NewCustomerServiceTestDriver(customer.NewCustomerService())
+
 	t.Run("should register a customer with valid data", func(t *testing.T) {
 		testData := loadYAMLTestData(t, "./data/valid-cases.yaml")
 
@@ -21,17 +23,17 @@ func TestRegisterCustomer(t *testing.T) {
 
 			t.Run(title, func(t *testing.T) {
 				// Given that
-				customer.ArrangeInternalsNoCustomerIsRegistered(t)
+				customerTestDriver.ArrangeInternalsNoCustomerIsRegistered(t)
 
 				// When we
-				result := customer.ActTryToRegisterACustomer(t, request)
+				result := customerTestDriver.ActTryToRegisterACustomer(t, request)
 				// with valid data
 
 				// Then the
-				customer.AssertRegistrationShouldSucceed(t, result)
+				customerTestDriver.AssertRegistrationShouldSucceed(t, result)
 
 				// And the
-				customer.AssertInternalsCustomerShouldBeProperlyRegistered(t, request)
+				customerTestDriver.AssertInternalsCustomerShouldBeProperlyRegistered(t, request)
 			})
 		}
 	})
@@ -47,17 +49,17 @@ func TestRegisterCustomer(t *testing.T) {
 
 			t.Run(title, func(t *testing.T) {
 				// Given that
-				customer.ArrangeInternalsNoCustomerIsRegistered(t)
+				customerTestDriver.ArrangeInternalsNoCustomerIsRegistered(t)
 
 				// When we
-				result := customer.ActTryToRegisterACustomer(t, request)
+				result := customerTestDriver.ActTryToRegisterACustomer(t, request)
 				// with invalid data
 
 				// Then the
-				customer.AssertRegistrationShouldFailWithMessage(t, result, findOnError...)
+				customerTestDriver.AssertRegistrationShouldFailWithMessage(t, result, findOnError...)
 
 				// And the
-				customer.AssertInternalsCustomerShouldNotBeRegistered(t, request)
+				customerTestDriver.AssertInternalsCustomerShouldNotBeRegistered(t, request)
 			})
 		}
 	})
@@ -75,17 +77,17 @@ func TestRegisterCustomer(t *testing.T) {
 
 			t.Run(title, func(t *testing.T) {
 				// Given that
-				customer.ArrangeInternalsSomeCustomersAreRegistered(t, referenceRequest)
+				customerTestDriver.ArrangeInternalsSomeCustomersAreRegistered(t, referenceRequest)
 
 				// When we
-				result := customer.ActTryToRegisterACustomer(t, request)
+				result := customerTestDriver.ActTryToRegisterACustomer(t, request)
 				// with duplicated data
 
 				// Then the
-				customer.AssertRegistrationShouldFailWithMessage(t, result, findOnError...)
+				customerTestDriver.AssertRegistrationShouldFailWithMessage(t, result, findOnError...)
 
 				// And the
-				customer.AssertInternalsCustomerShouldNotBeRegistered(t, request)
+				customerTestDriver.AssertInternalsCustomerShouldNotBeRegistered(t, request)
 			})
 		}
 	})
@@ -94,37 +96,37 @@ func TestRegisterCustomer(t *testing.T) {
 		referenceCustomer := loadYAMLTestData(t, "./data/reference-customer.yaml")
 
 		// Given that
-		customer.ArrangeInternalsSomeCustomersAreRegistered(t, referenceCustomer)
+		customerTestDriver.ArrangeInternalsSomeCustomersAreRegistered(t, referenceCustomer)
 
 		// When we
-		result := customer.ActTryToRegisterACustomer(t, referenceCustomer)
+		result := customerTestDriver.ActTryToRegisterACustomer(t, referenceCustomer)
 		// twice
 
 		// Then the
-		customer.AssertRegistrationShouldFailWithMessage(t, result, customer.ErrDuplication.Error(), "duplicated name", "duplicated email", "duplicated phone")
+		customerTestDriver.AssertRegistrationShouldFailWithMessage(t, result, customer.ErrDuplication.Error(), "duplicated name", "duplicated email", "duplicated phone")
 
 		// And
-		customer.AssertInternalsCustomerShouldNotBeDuplicated(t, referenceCustomer)
+		customerTestDriver.AssertInternalsCustomerShouldNotBeDuplicated(t, referenceCustomer)
 	})
 
 	t.Run("should return a generic system error on failure", func(t *testing.T) {
 		referenceCustomer := loadYAMLTestData(t, "./data/reference-customer.yaml")
 
 		// Given that
-		customer.ArrangeInternalsNoCustomerIsRegistered(t)
+		customerTestDriver.ArrangeInternalsNoCustomerIsRegistered(t)
 
 		// And
-		customer.ArrangeInternalsSomethingCausingAProblem(t)
+		customerTestDriver.ArrangeInternalsSomethingCausingAProblem(t)
 
 		// When we
-		result := customer.ActTryToRegisterACustomer(t, referenceCustomer)
+		result := customerTestDriver.ActTryToRegisterACustomer(t, referenceCustomer)
 		// with valid data
 
 		// Them the
-		customer.AssertRegistrationShouldFailWithMessage(t, result, "system error", "contact support")
+		customerTestDriver.AssertRegistrationShouldFailWithMessage(t, result, "system error", "contact support")
 
 		// And the
-		customer.AssertInternalsCustomerShouldNotBeRegistered(t, referenceCustomer)
+		customerTestDriver.AssertInternalsCustomerShouldNotBeRegistered(t, referenceCustomer)
 	})
 }
 
