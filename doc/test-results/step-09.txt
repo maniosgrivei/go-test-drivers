@@ -1,0 +1,132 @@
+Running tool: /usr/bin/go test -timeout 30s -tags test -run ^TestRegisterCustomer$ github.com/maniosgrivei/go-test-drivers/test/acceptance/customer
+
+=== RUN   TestRegisterCustomer
+=== RUN   TestRegisterCustomer/should_register_a_customer_with_valid_data
+=== RUN   TestRegisterCustomer/should_register_a_customer_with_valid_data/when_ordinary_physical_person
+--- PASS: TestRegisterCustomer/should_register_a_customer_with_valid_data/when_ordinary_physical_person (0.00s)
+=== RUN   TestRegisterCustomer/should_register_a_customer_with_valid_data/when_name_composed_only_by_vowels
+--- PASS: TestRegisterCustomer/should_register_a_customer_with_valid_data/when_name_composed_only_by_vowels (0.00s)
+=== RUN   TestRegisterCustomer/should_register_a_customer_with_valid_data/when_the_maximum_acceptable_name
+--- PASS: TestRegisterCustomer/should_register_a_customer_with_valid_data/when_the_maximum_acceptable_name (0.00s)
+=== RUN   TestRegisterCustomer/should_register_a_customer_with_valid_data/when_email_extension_has_the_minimum_allowed_length
+--- PASS: TestRegisterCustomer/should_register_a_customer_with_valid_data/when_email_extension_has_the_minimum_allowed_length (0.00s)
+=== RUN   TestRegisterCustomer/should_register_a_customer_with_valid_data/when_phone_has_a_3-digit_country_code
+--- PASS: TestRegisterCustomer/should_register_a_customer_with_valid_data/when_phone_has_a_3-digit_country_code (0.00s)
+=== RUN   TestRegisterCustomer/should_register_a_customer_with_valid_data/when_the_minimum_acceptable_name
+--- PASS: TestRegisterCustomer/should_register_a_customer_with_valid_data/when_the_minimum_acceptable_name (0.00s)
+=== RUN   TestRegisterCustomer/should_register_a_customer_with_valid_data/when_the_company_name_starting_by_a_number
+--- PASS: TestRegisterCustomer/should_register_a_customer_with_valid_data/when_the_company_name_starting_by_a_number (0.00s)
+=== RUN   TestRegisterCustomer/should_register_a_customer_with_valid_data/when_email_username_uses_all_allowed_character_types
+--- PASS: TestRegisterCustomer/should_register_a_customer_with_valid_data/when_email_username_uses_all_allowed_character_types (0.00s)
+=== RUN   TestRegisterCustomer/should_register_a_customer_with_valid_data/when_phone_has_a_1-digit_country_code
+--- PASS: TestRegisterCustomer/should_register_a_customer_with_valid_data/when_phone_has_a_1-digit_country_code (0.00s)
+=== RUN   TestRegisterCustomer/should_register_a_customer_with_valid_data/when_phone_contains_multiple_spaces
+--- PASS: TestRegisterCustomer/should_register_a_customer_with_valid_data/when_phone_contains_multiple_spaces (0.00s)
+=== RUN   TestRegisterCustomer/should_register_a_customer_with_valid_data/when_shorted_middle_name
+--- PASS: TestRegisterCustomer/should_register_a_customer_with_valid_data/when_shorted_middle_name (0.00s)
+=== RUN   TestRegisterCustomer/should_register_a_customer_with_valid_data/when_email_service_name_has_the_minimum_allowed_length
+--- PASS: TestRegisterCustomer/should_register_a_customer_with_valid_data/when_email_service_name_has_the_minimum_allowed_length (0.00s)
+=== RUN   TestRegisterCustomer/should_register_a_customer_with_valid_data/when_phone_has_the_maximum_allowed_length
+--- PASS: TestRegisterCustomer/should_register_a_customer_with_valid_data/when_phone_has_the_maximum_allowed_length (0.00s)
+=== RUN   TestRegisterCustomer/should_register_a_customer_with_valid_data/when_name_composed_only_by_consonants
+--- PASS: TestRegisterCustomer/should_register_a_customer_with_valid_data/when_name_composed_only_by_consonants (0.00s)
+=== RUN   TestRegisterCustomer/should_register_a_customer_with_valid_data/when_is_a_company
+--- PASS: TestRegisterCustomer/should_register_a_customer_with_valid_data/when_is_a_company (0.00s)
+=== RUN   TestRegisterCustomer/should_register_a_customer_with_valid_data/when_email_has_the_maximum_allowed_length
+--- PASS: TestRegisterCustomer/should_register_a_customer_with_valid_data/when_email_has_the_maximum_allowed_length (0.00s)
+=== RUN   TestRegisterCustomer/should_register_a_customer_with_valid_data/when_email_username_has_the_minimum_allowed_length
+--- PASS: TestRegisterCustomer/should_register_a_customer_with_valid_data/when_email_username_has_the_minimum_allowed_length (0.00s)
+--- PASS: TestRegisterCustomer/should_register_a_customer_with_valid_data (0.02s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_name_has_invalid_characters_sequence_blank_blank
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_name_has_invalid_characters_sequence_blank_blank (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_phone_country_code_is_too_long
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_phone_country_code_is_too_long (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_all_data
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_all_data (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_name_is_too_short
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_name_is_too_short (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_email_is_longer_than_the_maximum_acceptable
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_email_is_longer_than_the_maximum_acceptable (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_email_username_has_invalid_characters
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_email_username_has_invalid_characters (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_email_has_no_dot_in_domain_part
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_email_has_no_dot_in_domain_part (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_phone_has_invalid_character_sequence
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_phone_has_invalid_character_sequence (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_email
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_email (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_name_and_email
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_name_and_email (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_phone_does_not_start_with_a_plus_symbol
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_phone_does_not_start_with_a_plus_symbol (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_name
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_name (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_name_and_phone
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_name_and_phone (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_email_service_has_invalid_characters
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_email_service_has_invalid_characters (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_email_service_is_too_short
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_email_service_is_too_short (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_email_extension_is_too_short
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_email_extension_is_too_short (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_phone_has_no_space_after_country_code
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_phone_has_no_space_after_country_code (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_phone
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_phone (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_email_username_is_too_short
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_email_username_is_too_short (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_email_has_no_@_symbol
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_email_has_no_@_symbol (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_phone_has_invalid_characters
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_phone_has_invalid_characters (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_email_and_phone
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_missing_email_and_phone (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_name_has_two_parts_but_one_is_too_short
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_name_has_two_parts_but_one_is_too_short (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_name_has_invalid_character_@
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_name_has_invalid_character_@ (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_name_has_invalid_character_!
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_name_has_invalid_character_! (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_phone_is_shorter_than_minimum_acceptable
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_phone_is_shorter_than_minimum_acceptable (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_name_has_invalid_character_$
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_name_has_invalid_character_$ (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_name_has_invalid_character_sequence
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_name_has_invalid_character_sequence (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_email_extension_has_invalid_characters
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_email_extension_has_invalid_characters (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_phone_is_longer_than_maximum_acceptable
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_phone_is_longer_than_maximum_acceptable (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_name_has_invalid_character_#
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_name_has_invalid_character_# (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_name_has_only_a_single_part
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_name_has_only_a_single_part (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_name_is_too_long
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_name_is_too_long (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_name_has_invalid_character_%
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_name_has_invalid_character_% (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_name_has_invalid_character_sequence_--
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data/when_name_has_invalid_character_sequence_-- (0.00s)
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_invalid_data (0.03s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_duplicated_data
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_duplicated_data/when_having_same_name
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_duplicated_data/when_having_same_name (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_duplicated_data/when_having_same_email
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_duplicated_data/when_having_same_email (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_duplicated_data/when_having_same_phone
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_duplicated_data/when_having_same_phone (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_duplicated_data/when_having_same_name_and_email
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_duplicated_data/when_having_same_name_and_email (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_duplicated_data/when_having_same_name_and_phone
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_duplicated_data/when_having_same_name_and_phone (0.00s)
+=== RUN   TestRegisterCustomer/should_reject_a_registration_with_duplicated_data/when_having_same_email_and_phone
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_duplicated_data/when_having_same_email_and_phone (0.00s)
+--- PASS: TestRegisterCustomer/should_reject_a_registration_with_duplicated_data (0.01s)
+=== RUN   TestRegisterCustomer/should_not_register_the_same_user_twice
+--- PASS: TestRegisterCustomer/should_not_register_the_same_user_twice (0.00s)
+=== RUN   TestRegisterCustomer/should_return_a_generic_system_error_on_failure
+--- PASS: TestRegisterCustomer/should_return_a_generic_system_error_on_failure (0.00s)
+--- PASS: TestRegisterCustomer (0.06s)
+PASS
+ok      github.com/maniosgrivei/go-test-drivers/test/acceptance/customer        0.071s

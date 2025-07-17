@@ -5,13 +5,18 @@ import (
 	"testing"
 
 	"github.com/maniosgrivei/go-test-drivers/customer"
+	"github.com/maniosgrivei/go-test-drivers/customer/adapters/repository/reference"
 
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 )
 
 func TestRegisterCustomer(t *testing.T) {
-	customerTestDriver := customer.NewCustomerServiceTestDriver(customer.NewCustomerService())
+	customerRepository := reference.NewReferenceCustomerRepository()
+	customerService := customer.NewCustomerService(customerRepository)
+
+	customerRepositoryTestDriver := reference.NewReferenceCustomerRepositoryTestDriver(customerRepository)
+	customerTestDriver := customer.NewCustomerServiceTestDriver(customerService, customerRepositoryTestDriver)
 
 	t.Run("should register a customer with valid data", func(t *testing.T) {
 		testData := loadYAMLTestData(t, "./data/valid-cases.yaml")

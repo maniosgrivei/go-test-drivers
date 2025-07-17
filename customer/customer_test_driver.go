@@ -9,18 +9,65 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+//
+// Dependencies
+
+// CustomerRepositoryTestDriver is a test driver for the CustomerRepository.
+// It provides methods for arranging, acting, and asserting on the
+// CustomerRepository.
+type CustomerRepositoryTestDriver interface {
+	//
+	// Arrange
+
+	// ArrangeInternalsNoCustomerIsRegistered initializes the repository to a
+	// clean state.
+	ArrangeInternalsNoCustomerIsRegistered(t *testing.T)
+
+	// ArrangeInternalsSomeCustomersAreRegistered populates the repository with
+	// the given customers.
+	ArrangeInternalsSomeCustomersAreRegistered(t *testing.T, customers []*Customer)
+
+	// ArrangeInternalsSomethingCausingAProblem corrupts the internal state to
+	// ensure subsequent function calls will result in a system error.
+	ArrangeInternalsSomethingCausingAProblem(t *testing.T)
+
+	//
+	// Assert
+
+	// AssertInternalsCustomerShouldBeProperlyRegistered asserts that the
+	// customer is properly registered in the internal data structures.
+	AssertInternalsCustomerShouldBeProperlyRegistered(t *testing.T, customer *Customer)
+
+	// AssertInternalsCustomerShouldNotBeRegistered asserts that the customer is not
+	// present in the internal data structures.
+	AssertInternalsCustomerShouldNotBeRegistered(t *testing.T, customer *Customer)
+
+	// AssertInternalsCustomerShouldNotBeDuplicated asserts that the customer is not
+	// duplicated in the internal data structures. IDs are not compared.
+	AssertInternalsCustomerShouldNotBeDuplicated(t *testing.T, customer *Customer)
+}
+
+//
+// Test Driver
+
 // CustomerServiceTestDriver is a test driver for the CustomerService.
 // It provides methods for arranging, acting, and asserting on the
 // CustomerService.
 type CustomerServiceTestDriver struct {
 	*CustomerService
+
+	repositoryTD CustomerRepositoryTestDriver
 }
 
 // NewCustomerServiceTestDriver creates a new instance of
 // CustomerServiceTestDriver.
-func NewCustomerServiceTestDriver(customerService *CustomerService) *CustomerServiceTestDriver {
+func NewCustomerServiceTestDriver(
+	customerService *CustomerService,
+	repositoryTD CustomerRepositoryTestDriver,
+) *CustomerServiceTestDriver {
 	return &CustomerServiceTestDriver{
 		CustomerService: customerService,
+		repositoryTD:    repositoryTD,
 	}
 }
 
@@ -32,11 +79,7 @@ func NewCustomerServiceTestDriver(customerService *CustomerService) *CustomerSer
 func (td *CustomerServiceTestDriver) ArrangeInternalsNoCustomerIsRegistered(t *testing.T) {
 	t.Helper()
 
-	td.customers = make([]*Customer, 0)
-	td.idIndex = make(map[string]*Customer)
-	td.nameIndex = make(map[string]*Customer)
-	td.emailIndex = make(map[string]*Customer)
-	td.phoneIndex = make(map[string]*Customer)
+	td.repositoryTD.ArrangeInternalsNoCustomerIsRegistered(t)
 }
 
 // ArrangeInternalsSomeCustomersAreRegistered populates the repository with the
@@ -52,7 +95,8 @@ func (td *CustomerServiceTestDriver) ArrangeInternalsSomeCustomersAreRegistered(
 
 	td.ArrangeInternalsNoCustomerIsRegistered(t)
 
-	for _, cm := range customerMaps {
+	customers := make([]*Customer, len(customerMaps))
+	for i, cm := range customerMaps {
 		c := getCustomerFromMap(t, cm)
 
 		if c.ID == "" {
@@ -62,12 +106,10 @@ func (td *CustomerServiceTestDriver) ArrangeInternalsSomeCustomersAreRegistered(
 			require.NotEmpty(t, c.ID)
 		}
 
-		td.customers = append(td.customers, c)
-		td.idIndex[c.ID] = c
-		td.nameIndex[c.Name] = c
-		td.emailIndex[c.Email] = c
-		td.phoneIndex[c.Phone] = c
+		customers[i] = c
 	}
+
+	td.repositoryTD.ArrangeInternalsSomeCustomersAreRegistered(t, customers)
 }
 
 // ArrangeInternalsSomethingCausingAProblem corrupts the internal state to
@@ -75,11 +117,7 @@ func (td *CustomerServiceTestDriver) ArrangeInternalsSomeCustomersAreRegistered(
 func (td *CustomerServiceTestDriver) ArrangeInternalsSomethingCausingAProblem(t *testing.T) {
 	t.Helper()
 
-	td.customers = nil
-	td.idIndex = nil
-	td.nameIndex = nil
-	td.emailIndex = nil
-	td.phoneIndex = nil
+	td.repositoryTD.ArrangeInternalsSomethingCausingAProblem(t)
 }
 
 //
@@ -185,23 +223,9 @@ func (td *CustomerServiceTestDriver) AssertRegistrationShouldFailWithMessage(t *
 func (td *CustomerServiceTestDriver) AssertInternalsCustomerShouldBeProperlyRegistered(t *testing.T, customerData map[string]any) {
 	t.Helper()
 
-	r := require.New(t)
-
 	customer := getCustomerFromMap(t, customerData)
 
-	r.True(sliceContainsCustomer(td.customers, customer))
-
-	r.Contains(td.idIndex, customer.ID)
-	r.True(customersAreSame(td.idIndex[customer.ID], customer))
-
-	r.Contains(td.nameIndex, customer.Name)
-	r.True(customersAreSame(td.nameIndex[customer.Name], customer))
-
-	r.Contains(td.emailIndex, customer.Email)
-	r.True(customersAreSame(td.emailIndex[customer.Email], customer))
-
-	r.Contains(td.phoneIndex, customer.Phone)
-	r.True(customersAreSame(td.phoneIndex[customer.Phone], customer))
+	td.repositoryTD.AssertInternalsCustomerShouldBeProperlyRegistered(t, customer)
 }
 
 // AssertInternalsCustomerShouldNotBeRegistered asserts that the customer is not
@@ -215,15 +239,9 @@ func (td *CustomerServiceTestDriver) AssertInternalsCustomerShouldBeProperlyRegi
 func (td *CustomerServiceTestDriver) AssertInternalsCustomerShouldNotBeRegistered(t *testing.T, customerData map[string]any) {
 	t.Helper()
 
-	r := require.New(t)
-
 	customer := getCustomerFromMap(t, customerData)
 
-	r.False(sliceContainsCustomer(td.customers, customer))
-	r.False(mapContainsCustomer(td.idIndex, customer))
-	r.False(mapContainsCustomer(td.nameIndex, customer))
-	r.False(mapContainsCustomer(td.emailIndex, customer))
-	r.False(mapContainsCustomer(td.phoneIndex, customer))
+	td.repositoryTD.AssertInternalsCustomerShouldNotBeRegistered(t, customer)
 }
 
 // AssertInternalsCustomerShouldNotBeDuplicated asserts that the customer is not
@@ -231,15 +249,9 @@ func (td *CustomerServiceTestDriver) AssertInternalsCustomerShouldNotBeRegistere
 func (td *CustomerServiceTestDriver) AssertInternalsCustomerShouldNotBeDuplicated(t *testing.T, customerData map[string]any) {
 	t.Helper()
 
-	r := require.New(t)
-
 	customer := getCustomerFromMap(t, customerData)
 
-	r.LessOrEqual(sliceCountCustomeOccurrences(td.customers, customer), 1)
-	r.LessOrEqual(mapCountCustomeOccurrences(td.idIndex, customer), 1)
-	r.LessOrEqual(mapCountCustomeOccurrences(td.nameIndex, customer), 1)
-	r.LessOrEqual(mapCountCustomeOccurrences(td.emailIndex, customer), 1)
-	r.LessOrEqual(mapCountCustomeOccurrences(td.phoneIndex, customer), 1)
+	td.repositoryTD.AssertInternalsCustomerShouldNotBeDuplicated(t, customer)
 }
 
 //
@@ -293,80 +305,4 @@ func getOptionalStringFromMap(t *testing.T, data map[string]any, key string) str
 	r.True(ok, "value for key '%s' should be a string", key)
 
 	return strVal
-}
-
-//
-// Utility Functions
-
-// customersAreSame compares two customers for equality. IDs are not compared.
-func customersAreSame(c1, c2 *Customer) bool {
-	if c1 == c2 {
-		return true
-	}
-
-	if c1.Name != c2.Name {
-		return false
-	}
-
-	if c1.Email != c2.Email {
-		return false
-	}
-
-	if c1.Phone != c2.Phone {
-		return false
-	}
-
-	return true
-}
-
-// sliceCountCustomeOccurrences counts the occurrences of a customer in a slice.
-// IDs are not compared.
-func sliceCountCustomeOccurrences(s []*Customer, customer *Customer) int {
-	var count int
-
-	for _, c := range s {
-		if customersAreSame(c, customer) {
-			count++
-		}
-	}
-
-	return count
-}
-
-// sliceContainsCustomer checks if a slice of customers contains a specific
-// customer. IDs are not compared.
-func sliceContainsCustomer(s []*Customer, customer *Customer) bool {
-	for _, c := range s {
-		if customersAreSame(c, customer) {
-			return true
-		}
-	}
-
-	return false
-}
-
-// mapCountCustomeOccurrences counts the occurrences of a customer in a map.
-// IDs are not compared.
-func mapCountCustomeOccurrences(m map[string]*Customer, customer *Customer) int {
-	var count int
-
-	for _, c := range m {
-		if customersAreSame(c, customer) {
-			count++
-		}
-	}
-
-	return count
-}
-
-// mapContainsCustomer checks if a map of customers contains a specific
-// customer. IDs are not compared.
-func mapContainsCustomer(m map[string]*Customer, customer *Customer) bool {
-	for _, c := range m {
-		if customersAreSame(c, customer) {
-			return true
-		}
-	}
-
-	return false
 }
