@@ -9,18 +9,34 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// CustomerServiceTestDriver is a test driver for the CustomerService.
+// It provides methods for arranging, acting, and asserting on the
+// CustomerService.
+type CustomerServiceTestDriver struct {
+	*CustomerService
+}
+
+// NewCustomerServiceTestDriver creates a new instance of
+// CustomerServiceTestDriver.
+func NewCustomerServiceTestDriver(customerService *CustomerService) *CustomerServiceTestDriver {
+	return &CustomerServiceTestDriver{
+		CustomerService: customerService,
+	}
+}
+
 //
 // Arrange
 
-// ArrangeInternalsNoCustomerIsRegistered initializes the repository to a clean state.
-func ArrangeInternalsNoCustomerIsRegistered(t *testing.T) {
+// ArrangeInternalsNoCustomerIsRegistered initializes the repository to a clean
+// state.
+func (td *CustomerServiceTestDriver) ArrangeInternalsNoCustomerIsRegistered(t *testing.T) {
 	t.Helper()
 
-	customers = make([]*Customer, 0)
-	idIndex = make(map[string]*Customer)
-	nameIndex = make(map[string]*Customer)
-	emailIndex = make(map[string]*Customer)
-	phoneIndex = make(map[string]*Customer)
+	td.customers = make([]*Customer, 0)
+	td.idIndex = make(map[string]*Customer)
+	td.nameIndex = make(map[string]*Customer)
+	td.emailIndex = make(map[string]*Customer)
+	td.phoneIndex = make(map[string]*Customer)
 }
 
 // ArrangeInternalsSomeCustomersAreRegistered populates the repository with the
@@ -31,10 +47,10 @@ func ArrangeInternalsNoCustomerIsRegistered(t *testing.T) {
 // - name: string
 // - email: string
 // - phone: string
-func ArrangeInternalsSomeCustomersAreRegistered(t *testing.T, customerMaps ...map[string]any) {
+func (td *CustomerServiceTestDriver) ArrangeInternalsSomeCustomersAreRegistered(t *testing.T, customerMaps ...map[string]any) {
 	t.Helper()
 
-	ArrangeInternalsNoCustomerIsRegistered(t)
+	td.ArrangeInternalsNoCustomerIsRegistered(t)
 
 	for _, cm := range customerMaps {
 		c := getCustomerFromMap(t, cm)
@@ -46,24 +62,24 @@ func ArrangeInternalsSomeCustomersAreRegistered(t *testing.T, customerMaps ...ma
 			require.NotEmpty(t, c.ID)
 		}
 
-		customers = append(customers, c)
-		idIndex[c.ID] = c
-		nameIndex[c.Name] = c
-		emailIndex[c.Email] = c
-		phoneIndex[c.Phone] = c
+		td.customers = append(td.customers, c)
+		td.idIndex[c.ID] = c
+		td.nameIndex[c.Name] = c
+		td.emailIndex[c.Email] = c
+		td.phoneIndex[c.Phone] = c
 	}
 }
 
 // ArrangeInternalsSomethingCausingAProblem corrupts the internal state to
 // ensure subsequent function calls will result in a system error.
-func ArrangeInternalsSomethingCausingAProblem(t *testing.T) {
+func (td *CustomerServiceTestDriver) ArrangeInternalsSomethingCausingAProblem(t *testing.T) {
 	t.Helper()
 
-	customers = nil
-	idIndex = nil
-	nameIndex = nil
-	emailIndex = nil
-	phoneIndex = nil
+	td.customers = nil
+	td.idIndex = nil
+	td.nameIndex = nil
+	td.emailIndex = nil
+	td.phoneIndex = nil
 }
 
 //
@@ -80,14 +96,14 @@ func ArrangeInternalsSomethingCausingAProblem(t *testing.T) {
 // It returns a map containing:
 // - id: string
 // - err: error
-func ActTryToRegisterACustomer(t *testing.T, request map[string]any) map[string]any {
+func (td *CustomerServiceTestDriver) ActTryToRegisterACustomer(t *testing.T, request map[string]any) map[string]any {
 	t.Helper()
 
 	name := getOptionalStringFromMap(t, request, "name")
 	email := getOptionalStringFromMap(t, request, "email")
 	phone := getOptionalStringFromMap(t, request, "phone")
 
-	id, err := Register(&RegisterRequest{Name: name, Email: email, Phone: phone})
+	id, err := td.Register(&RegisterRequest{Name: name, Email: email, Phone: phone})
 
 	// Update the request with the generated customer ID.
 	request["id"] = id
@@ -106,7 +122,7 @@ func ActTryToRegisterACustomer(t *testing.T, request map[string]any) map[string]
 // It looks for the following attributes in the `result` map:
 // - id: string
 // - err: error
-func AssertRegistrationShouldSucceed(t *testing.T, result map[string]any) {
+func (td *CustomerServiceTestDriver) AssertRegistrationShouldSucceed(t *testing.T, result map[string]any) {
 	t.Helper()
 
 	r := require.New(t)
@@ -124,7 +140,7 @@ func AssertRegistrationShouldSucceed(t *testing.T, result map[string]any) {
 // It looks for the following attributes in the `result` map:
 // - id: string
 // - err: error
-func AssertRegistrationShouldFail(t *testing.T, result map[string]any) {
+func (td *CustomerServiceTestDriver) AssertRegistrationShouldFail(t *testing.T, result map[string]any) {
 	t.Helper()
 
 	r := require.New(t)
@@ -147,10 +163,10 @@ func AssertRegistrationShouldFail(t *testing.T, result map[string]any) {
 // It looks for the following attributes in the `result` map:
 // - id: string
 // - err: error
-func AssertRegistrationShouldFailWithMessage(t *testing.T, result map[string]any, targetMessages ...string) {
+func (td *CustomerServiceTestDriver) AssertRegistrationShouldFailWithMessage(t *testing.T, result map[string]any, targetMessages ...string) {
 	t.Helper()
 
-	AssertRegistrationShouldFail(t, result)
+	td.AssertRegistrationShouldFail(t, result)
 
 	errorMessage := result["err"].(error).Error()
 	for _, msg := range targetMessages {
@@ -166,26 +182,26 @@ func AssertRegistrationShouldFailWithMessage(t *testing.T, result map[string]any
 // - name: string
 // - email: string
 // - phone: string
-func AssertInternalsCustomerShouldBeProperlyRegistered(t *testing.T, customerData map[string]any) {
+func (td *CustomerServiceTestDriver) AssertInternalsCustomerShouldBeProperlyRegistered(t *testing.T, customerData map[string]any) {
 	t.Helper()
 
 	r := require.New(t)
 
 	customer := getCustomerFromMap(t, customerData)
 
-	r.True(sliceContainsCustomer(customers, customer))
+	r.True(sliceContainsCustomer(td.customers, customer))
 
-	r.Contains(idIndex, customer.ID)
-	r.True(customersAreSame(idIndex[customer.ID], customer))
+	r.Contains(td.idIndex, customer.ID)
+	r.True(customersAreSame(td.idIndex[customer.ID], customer))
 
-	r.Contains(nameIndex, customer.Name)
-	r.True(customersAreSame(nameIndex[customer.Name], customer))
+	r.Contains(td.nameIndex, customer.Name)
+	r.True(customersAreSame(td.nameIndex[customer.Name], customer))
 
-	r.Contains(emailIndex, customer.Email)
-	r.True(customersAreSame(emailIndex[customer.Email], customer))
+	r.Contains(td.emailIndex, customer.Email)
+	r.True(customersAreSame(td.emailIndex[customer.Email], customer))
 
-	r.Contains(phoneIndex, customer.Phone)
-	r.True(customersAreSame(phoneIndex[customer.Phone], customer))
+	r.Contains(td.phoneIndex, customer.Phone)
+	r.True(customersAreSame(td.phoneIndex[customer.Phone], customer))
 }
 
 // AssertInternalsCustomerShouldNotBeRegistered asserts that the customer is not
@@ -196,34 +212,34 @@ func AssertInternalsCustomerShouldBeProperlyRegistered(t *testing.T, customerDat
 // - name: string
 // - email: string
 // - phone: string
-func AssertInternalsCustomerShouldNotBeRegistered(t *testing.T, customerData map[string]any) {
+func (td *CustomerServiceTestDriver) AssertInternalsCustomerShouldNotBeRegistered(t *testing.T, customerData map[string]any) {
 	t.Helper()
 
 	r := require.New(t)
 
 	customer := getCustomerFromMap(t, customerData)
 
-	r.False(sliceContainsCustomer(customers, customer))
-	r.False(mapContainsCustomer(idIndex, customer))
-	r.False(mapContainsCustomer(nameIndex, customer))
-	r.False(mapContainsCustomer(emailIndex, customer))
-	r.False(mapContainsCustomer(phoneIndex, customer))
+	r.False(sliceContainsCustomer(td.customers, customer))
+	r.False(mapContainsCustomer(td.idIndex, customer))
+	r.False(mapContainsCustomer(td.nameIndex, customer))
+	r.False(mapContainsCustomer(td.emailIndex, customer))
+	r.False(mapContainsCustomer(td.phoneIndex, customer))
 }
 
 // AssertInternalsCustomerShouldNotBeDuplicated asserts that the customer is not
 // duplicated in the internal data structures. IDs are not compared.
-func AssertInternalsCustomerShouldNotBeDuplicated(t *testing.T, customerData map[string]any) {
+func (td *CustomerServiceTestDriver) AssertInternalsCustomerShouldNotBeDuplicated(t *testing.T, customerData map[string]any) {
 	t.Helper()
 
 	r := require.New(t)
 
 	customer := getCustomerFromMap(t, customerData)
 
-	r.LessOrEqual(sliceCountCustomeOccurrences(customers, customer), 1)
-	r.LessOrEqual(mapCountCustomeOccurrences(idIndex, customer), 1)
-	r.LessOrEqual(mapCountCustomeOccurrences(nameIndex, customer), 1)
-	r.LessOrEqual(mapCountCustomeOccurrences(emailIndex, customer), 1)
-	r.LessOrEqual(mapCountCustomeOccurrences(phoneIndex, customer), 1)
+	r.LessOrEqual(sliceCountCustomeOccurrences(td.customers, customer), 1)
+	r.LessOrEqual(mapCountCustomeOccurrences(td.idIndex, customer), 1)
+	r.LessOrEqual(mapCountCustomeOccurrences(td.nameIndex, customer), 1)
+	r.LessOrEqual(mapCountCustomeOccurrences(td.emailIndex, customer), 1)
+	r.LessOrEqual(mapCountCustomeOccurrences(td.phoneIndex, customer), 1)
 }
 
 //
