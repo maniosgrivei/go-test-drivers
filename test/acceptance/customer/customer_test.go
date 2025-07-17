@@ -12,20 +12,28 @@ import (
 
 func TestRegisterCustomer(t *testing.T) {
 	t.Run("should register a customer with valid data", func(t *testing.T) {
-		referenceCustomer := loadYAMLTestData(t, "./data/reference-customer.yaml")
+		testData := loadYAMLTestData(t, "./data/valid-cases.yaml")
 
-		// Given that
-		customer.ArrangeInternalsNoCustomerIsRegistered(t)
+		cases := extractCases(t, testData)
+		for title, bundle := range cases {
+			caseData := bundleToCaseData(t, bundle)
+			request := extractRequest(t, caseData)
 
-		// When we
-		result := customer.ActTryToRegisterACustomer(t, referenceCustomer)
-		// with valid data
+			t.Run(title, func(t *testing.T) {
+				// Given that
+				customer.ArrangeInternalsNoCustomerIsRegistered(t)
 
-		// Then the
-		customer.AssertRegistrationShouldSucceed(t, result)
+				// When we
+				result := customer.ActTryToRegisterACustomer(t, request)
+				// with valid data
 
-		// And the
-		customer.AssertInternalsCustomerShouldBeProperlyRegistered(t, referenceCustomer)
+				// Then the
+				customer.AssertRegistrationShouldSucceed(t, result)
+
+				// And the
+				customer.AssertInternalsCustomerShouldBeProperlyRegistered(t, request)
+			})
+		}
 	})
 
 	t.Run("should reject a registration with invalid data", func(t *testing.T) {

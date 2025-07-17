@@ -69,3 +69,263 @@ cases:
       - "invalid name"
       - "invalid email"
       - "invalid phone"
+
+  "when name is too short":
+    request:
+      <<: *reference_request
+      name: "Jo"
+    find_on_error:
+      - "validation error"
+      - "invalid name"
+      - "too short"
+
+  "when name has only a single part":
+    request:
+      <<: *reference_request
+      name: "Jaccobson"
+    find_on_error:
+      - "validation error"
+      - "invalid name"
+      - "not a full name"
+
+  "when name has two parts but one is too short":
+    request:
+      <<: *reference_request
+      name: "Jaccobson J."
+    find_on_error:
+      - "validation error"
+      - "invalid name"
+      - "first or last name too short"
+  
+  "when name is too long":
+    request:
+      <<: *reference_request
+      name: "Jo Brend Michael Norton Amber Isaac Peerpoint-Peperontino Asdrubal Torres de Fontes"
+    find_on_error:
+      - "validation error"
+      - "invalid name"
+      - "too long"
+
+  "when name has invalid character @":
+    request:
+      <<: *reference_request
+      name: "J@ccobson Willis"
+    find_on_error:
+      - "validation error"
+      - "invalid name"
+      - "invalid character"
+
+  "when name has invalid character #":
+    request:
+      <<: *reference_request
+      name: "Jacc#bson Willis"
+    find_on_error:
+      - "validation error"
+      - "invalid name"
+      - "invalid character"
+
+  "when name has invalid character $":
+    request:
+      <<: *reference_request
+      name: "Jaccob$on Willis"
+    find_on_error:
+      - "validation error"
+      - "invalid name"
+      - "invalid character"
+
+  "when name has invalid character !":
+    request:
+      <<: *reference_request
+      name: "Jaccobson W!llis"
+    find_on_error:
+      - "validation error"
+      - "invalid name"
+      - "invalid character"
+
+  "when name has invalid character %":
+    request:
+      <<: *reference_request
+      name: "Jacco%son Willis"
+    find_on_error:
+      - "validation error"
+      - "invalid name"
+      - "invalid character"
+
+  "when name has invalid character sequence --":
+    request:
+      <<: *reference_request
+      name: "Jaccobson de--Willis"
+    find_on_error:
+      - "validation error"
+      - "invalid name"
+      - "invalid character sequence"
+
+  "when name has invalid character sequence":
+    request:
+      <<: *reference_request
+      name: "Jaccobson J.. Willis"
+    find_on_error:
+      - "validation error"
+      - "invalid name"
+      - "invalid character sequence"
+
+  "when name has invalid characters sequence blank blank":
+    request:
+      <<: *reference_request
+      name: "Jaccobson  Willis"
+    find_on_error:
+      - "validation error"
+      - "invalid name"
+      - "invalid character sequence"
+
+  "when email is longer than the maximum acceptable":
+    request:
+      <<: *reference_request
+      email: "a.very.long.and.not.so.meaningfull.email.address.for.testing@somecompany.com"
+    find_on_error:
+      - "validation error"
+      - "invalid email"
+      - "too long"
+
+  "when email username has invalid characters":
+    request:
+      <<: *reference_request
+      email: "invalid#char@somecompany.com"
+    find_on_error:
+      - "validation error"
+      - "invalid email"
+      - "invalid username"
+      - "invalid characters"
+
+  "when email service has invalid characters":
+    request:
+      <<: *reference_request
+      email: "invalidchar@some#company.com"
+    find_on_error:
+      - "validation error"
+      - "invalid email"
+      - "invalid service"
+      - "invalid characters"
+
+  "when email extension has invalid characters":
+    request:
+      <<: *reference_request
+      email: "invalidchar@somecompany.c#m"
+    find_on_error:
+      - "validation error"
+      - "invalid email"
+      - "invalid extension"
+      - "invalid characters"
+
+  "when email username is too short":
+    request:
+      <<: *reference_request
+      email: "ab@somecompany.com"
+    find_on_error:
+      - "validation error"
+      - "invalid email"
+      - "invalid username"
+      - "too short"
+
+  "when email service is too short":
+    request:
+      <<: *reference_request
+      email: "user@sc.com"
+    find_on_error:
+      - "validation error"
+      - "invalid email"
+      - "invalid service"
+      - "too short"
+
+  "when email extension is too short":
+    request:
+      <<: *reference_request
+      email: "user@somecompany.c"
+    find_on_error:
+      - "validation error"
+      - "invalid email"
+      - "invalid extension"
+      - "too short"
+
+  "when email has no @ symbol":
+    request:
+      <<: *reference_request
+      email: "usersomecompany.com"
+    find_on_error:
+      - "validation error"
+      - "invalid email"
+      - "invalid email format"
+
+  "when email has no dot in domain part":
+    request:
+      <<: *reference_request
+      email: "user@somecompanycom"
+    find_on_error:
+      - "validation error"
+      - "invalid email"
+      - "invalid email format"
+
+  "when phone is shorter than minimum acceptable":
+    request:
+      <<: *reference_request
+      phone: "+1 2"
+    find_on_error:
+      - "validation error"
+      - "invalid phone"
+      - "too short"
+  
+  "when phone is longer than maximum acceptable":
+    request:
+      <<: *reference_request
+      phone: "+1 234 567 890 123 456 7890"
+    find_on_error:
+      - "validation error"
+      - "invalid phone"
+      - "too long"
+
+  "when phone has invalid characters":
+    request:
+      <<: *reference_request
+      phone: "+1 234-567-890A"
+    find_on_error:
+      - "validation error"
+      - "invalid phone"
+      - "invalid characters"
+
+  "when phone has invalid character sequence":
+    request:
+      <<: *reference_request
+      phone: "+1 234  567 890A"
+    find_on_error:
+      - "validation error"
+      - "invalid phone"
+      - "invalid character sequence"
+
+  "when phone does not start with a plus symbol":
+    request:
+      <<: *reference_request
+      phone: "1 234 567 890"
+    find_on_error:
+      - "validation error"
+      - "invalid phone"
+      - "invalid country code"
+      - "missing the leading plus symbol"
+
+  "when phone country code is too long":
+    request:
+      <<: *reference_request
+      phone: "+1234 567 890"
+    find_on_error:
+      - "validation error"
+      - "invalid phone"
+      - "invalid country code"
+      - "too long"
+
+  "when phone has no space after country code":
+    request:
+      <<: *reference_request
+      phone: "+1234567890"
+    find_on_error:
+      - "validation error"
+      - "invalid phone"
+      - "invalid phone format"
