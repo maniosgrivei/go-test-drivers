@@ -1,0 +1,102 @@
+cases:
+  "when ordinary physical person":
+    request:
+      name: "John Due"
+      email: "john.due@somecompany.com"
+      phone: "+1 234 567 890"
+
+  "when name composed only by vowels":
+    request:
+      name: "Aeoui Euio"
+      email: "aeoui.euio@somecompany.com"
+      phone: "+1 652 527 890"
+
+  "when name composed only by consonants":
+    request:
+      name: "Sywvy Wlsch"
+      email: "sywvy.wlsch@somecompany.com"
+      phone: "+1 652 854 855"
+
+  "when shorted middle name":
+    request:
+      name: "Silvia L. Theodore"
+      email: "silvia.theodore@somecompany.com"
+      phone: "+1 297 554 822"
+
+  "when the minimum acceptable name":
+    request:
+      name: "Joe Ell"
+      email: "joe.ell@somecompany.com"
+      phone: "+1 633 877 855"
+
+  "when the maximum acceptable name":
+    request:
+      name: "Joellezinammund Elliah Einchbackhrrabin Norberto Friccacello"
+      email: "elliah.einchbackhrrabin@somecompany.com"
+      phone: "+1 629 555 475"
+
+  "when is a company":
+    request:
+      name: "Stelantis Inc."
+      email: "contact@stelantis.com"
+      phone: "+1 857 117 115"
+
+  "when the company name starting by a number":
+    request:
+      name: "99Burger Ltd."
+      email: "askfor@99burger.com"
+      phone: "+1 999 845 035"
+
+  "when email has the maximum allowed length":
+    request:
+      name: "International Compliance Solutions LLC"
+      email: "user.name.with.many.dots.and.numbers1234567890@long-mail.io"
+      phone: "+44 20 7946 0958"
+
+  "when email username has the minimum allowed length":
+    request:
+      name: "ABC Logistics"
+      email: "abc@shipping-and-handling.co.uk"
+      phone: "+44 20 7946 0959"
+
+  "when email service name has the minimum allowed length":
+    request:
+      name: "Domain XYZ Partners"
+      email: "contact-us@xyz.org"
+      phone: "+1 415 555 2671"
+
+  "when email extension has the minimum allowed length":
+    request:
+      name: "Digital Ocean Imports"
+      email: "support@digital-imports.io"
+      phone: "+1 415 555 2672"
+
+  "when email username uses all allowed character types":
+    request:
+      name: "Hyphen-Underscore Industries"
+      email: "user_name-123.test.456@hyphen-underscore.industries"
+      phone: "+1 415 555 2673"
+
+  "when phone has the maximum allowed length":
+    request:
+      name: "Global Telecommunications Inc."
+      email: "contact@global-telecom.com"
+      phone: "+1 123 456 7890 1234"
+
+  "when phone has a 1-digit country code":
+    request:
+      name: "North American Logistics"
+      email: "shipping@nalogistics.us"
+      phone: "+1 555 123 4567"
+
+  "when phone has a 3-digit country code":
+    request:
+      name: "Emerald Isle Imports"
+      email: "orders@emeraldisle.ie"
+      phone: "+353 1 456 7890"
+
+  "when phone contains multiple spaces":
+    request:
+      name: "Brazil Coffee Exporters"
+      email: "export@brazilcoffee.com.br"
+      phone: "+55 11 98765 4321"

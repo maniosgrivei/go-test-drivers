@@ -54,7 +54,7 @@ func Register(request *RegisterRequest) (id string, err error) {
 		return "", ErrSystem
 	}
 
-	if err = validateRegisterRequest(request); err != nil {
+	if err = ValidateRegisterRequest(request); err != nil {
 		return "", fmt.Errorf("%w: %w", ErrValidation, err)
 	}
 
