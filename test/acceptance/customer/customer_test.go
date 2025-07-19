@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/maniosgrivei/go-test-drivers/customer"
+	badgerpoc "github.com/maniosgrivei/go-test-drivers/customer/adapters/repository/badger-poc"
 	reference "github.com/maniosgrivei/go-test-drivers/customer/adapters/repository/reference"
 	sqlitepoc "github.com/maniosgrivei/go-test-drivers/customer/adapters/repository/sqlite-poc"
 
@@ -14,7 +15,7 @@ import (
 )
 
 func TestRegisterCustomer(t *testing.T) {
-	for _, variant := range []string{referenceSUTVariant, sqliteSUTVariant} {
+	for _, variant := range []string{referenceSUTVariant, sqliteSUTVariant, badgerSUTVariant} {
 		t.Run(fmt.Sprintf("with system variant %s", variant), func(t *testing.T) {
 			customerTestDriver := sutSetup(t, variant)
 
@@ -140,6 +141,7 @@ func TestRegisterCustomer(t *testing.T) {
 const (
 	referenceSUTVariant = "reference"
 	sqliteSUTVariant    = "sqlite"
+	badgerSUTVariant    = "badger"
 )
 
 // sutSetup creates a new CustomerService and CustomerServiceTestDriver for the
@@ -164,6 +166,11 @@ func sutSetup(t *testing.T, variant string) *customer.CustomerServiceTestDriver 
 		repo := sqlitepoc.NewSQLiteCustomerRepository()
 		customerRepository = repo
 		repositoryTestDriver = sqlitepoc.NewSQLiteCustomerRepositoryTestDriver(repo)
+
+	case badgerSUTVariant:
+		repo := badgerpoc.NewBadgerCustomerRepository()
+		customerRepository = repo
+		repositoryTestDriver = badgerpoc.NewBadgerCustomerRepositoryTestDriver(repo)
 
 	default:
 		t.Fatalf("unknown SUT variant: %s", variant)
