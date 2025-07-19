@@ -14,6 +14,135 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+//
+// Tests
+//
+//
+
+// shouldRegisterACustomerWithValidData tests the successful registration of a
+// customer.
+func shouldRegisterACustomerWithValidData(
+	t *testing.T,
+	testDriver *customer.CustomerServiceTestDriver,
+	request map[string]any,
+) {
+	t.Helper()
+
+	// Given that
+	testDriver.ArrangeInternalsNoCustomerIsRegistered(t)
+
+	// When we
+	result := testDriver.ActTryToRegisterACustomer(t, request)
+	// with valid data
+
+	// Then the
+	testDriver.AssertRegistrationShouldSucceed(t, result)
+
+	// And the
+	testDriver.AssertInternalsCustomerShouldBeProperlyRegistered(t, request)
+}
+
+// shouldRejectARegistrationWithInvalidData tests the rejection of a customer
+// registration due to invalid data.
+func shouldRejectARegistrationWithInvalidData(
+	t *testing.T,
+	testDriver *customer.CustomerServiceTestDriver,
+	request map[string]any,
+	findOnError []string,
+) {
+	t.Helper()
+
+	// Given that
+	testDriver.ArrangeInternalsNoCustomerIsRegistered(t)
+
+	// When we
+	result := testDriver.ActTryToRegisterACustomer(t, request)
+	// with invalid data
+
+	// Then the
+	testDriver.AssertRegistrationShouldFailWithMessage(t, result, findOnError...)
+
+	// And the
+	testDriver.AssertInternalsCustomerShouldNotBeRegistered(t, request)
+}
+
+// shouldRejectARegistrationWithDuplicatedData tests the rejection of a customer
+// registration due to duplicated data.
+func shouldRejectARegistrationWithDuplicatedData(
+	t *testing.T,
+	testDriver *customer.CustomerServiceTestDriver,
+	referenceRequest, request map[string]any,
+	findOnError []string,
+) {
+	t.Helper()
+
+	// Given that
+	testDriver.ArrangeInternalsSomeCustomersAreRegistered(t, referenceRequest)
+
+	// When we
+	result := testDriver.ActTryToRegisterACustomer(t, request)
+	// with duplicated data
+
+	// Then the
+	testDriver.AssertRegistrationShouldFailWithMessage(t, result, findOnError...)
+
+	// And the
+	testDriver.AssertInternalsCustomerShouldNotBeRegistered(t, request)
+}
+
+// shouldNotRegisterTheSameUserTwice tests that the same user cannot be
+// registered twice.
+func shouldNotRegisterTheSameUserTwice(
+	t *testing.T,
+	testDriver *customer.CustomerServiceTestDriver,
+	referenceCustomer map[string]any,
+) {
+	t.Helper()
+
+	// Given that
+	testDriver.ArrangeInternalsSomeCustomersAreRegistered(t, referenceCustomer)
+
+	// When we
+	result := testDriver.ActTryToRegisterACustomer(t, referenceCustomer)
+	// twice
+
+	// Then the
+	testDriver.AssertRegistrationShouldFailWithMessage(t, result, customer.ErrDuplication.Error(), "duplicated name", "duplicated email", "duplicated phone")
+
+	// And
+	testDriver.AssertInternalsCustomerShouldNotBeDuplicated(t, referenceCustomer)
+}
+
+// shouldReturnAGenericSystemErrorOnFailure tests that a generic system error is
+// returned on failure.
+func shouldReturnAGenericSystemErrorOnFailure(
+	t *testing.T,
+	customerTestDriver *customer.CustomerServiceTestDriver,
+	referenceCustomer map[string]any,
+) {
+	t.Helper()
+
+	// Given that
+	customerTestDriver.ArrangeInternalsNoCustomerIsRegistered(t)
+
+	// And
+	customerTestDriver.ArrangeInternalsSomethingCausingAProblem(t)
+
+	// When we
+	result := customerTestDriver.ActTryToRegisterACustomer(t, referenceCustomer)
+	// with valid data
+
+	// Them the
+	customerTestDriver.AssertRegistrationShouldFailWithMessage(t, result, "system error", "contact support")
+}
+
+//
+// Test Suite
+//
+//
+
+// TestRegisterCustomer is the acceptance test suite for the customer registration
+// use case.
 func TestRegisterCustomer(t *testing.T) {
 	for _, variant := range []string{referenceSUTVariant, sqliteSUTVariant, badgerSUTVariant} {
 		t.Run(fmt.Sprintf("with system variant %s", variant), func(t *testing.T) {
@@ -28,18 +157,7 @@ func TestRegisterCustomer(t *testing.T) {
 					request := extractRequest(t, caseData)
 
 					t.Run(title, func(t *testing.T) {
-						// Given that
-						customerTestDriver.ArrangeInternalsNoCustomerIsRegistered(t)
-
-						// When we
-						result := customerTestDriver.ActTryToRegisterACustomer(t, request)
-						// with valid data
-
-						// Then the
-						customerTestDriver.AssertRegistrationShouldSucceed(t, result)
-
-						// And the
-						customerTestDriver.AssertInternalsCustomerShouldBeProperlyRegistered(t, request)
+						shouldRegisterACustomerWithValidData(t, customerTestDriver, request)
 					})
 				}
 			})
@@ -54,18 +172,7 @@ func TestRegisterCustomer(t *testing.T) {
 					findOnError := extractFindOnError(t, caseData)
 
 					t.Run(title, func(t *testing.T) {
-						// Given that
-						customerTestDriver.ArrangeInternalsNoCustomerIsRegistered(t)
-
-						// When we
-						result := customerTestDriver.ActTryToRegisterACustomer(t, request)
-						// with invalid data
-
-						// Then the
-						customerTestDriver.AssertRegistrationShouldFailWithMessage(t, result, findOnError...)
-
-						// And the
-						customerTestDriver.AssertInternalsCustomerShouldNotBeRegistered(t, request)
+						shouldRejectARegistrationWithInvalidData(t, customerTestDriver, request, findOnError)
 					})
 				}
 			})
@@ -82,18 +189,7 @@ func TestRegisterCustomer(t *testing.T) {
 					findOnError := extractFindOnError(t, caseData)
 
 					t.Run(title, func(t *testing.T) {
-						// Given that
-						customerTestDriver.ArrangeInternalsSomeCustomersAreRegistered(t, referenceRequest)
-
-						// When we
-						result := customerTestDriver.ActTryToRegisterACustomer(t, request)
-						// with duplicated data
-
-						// Then the
-						customerTestDriver.AssertRegistrationShouldFailWithMessage(t, result, findOnError...)
-
-						// And the
-						customerTestDriver.AssertInternalsCustomerShouldNotBeRegistered(t, request)
+						shouldRejectARegistrationWithDuplicatedData(t, customerTestDriver, referenceRequest, request, findOnError)
 					})
 				}
 			})
@@ -101,35 +197,13 @@ func TestRegisterCustomer(t *testing.T) {
 			t.Run("should not register the same user twice", func(t *testing.T) {
 				referenceCustomer := loadYAMLTestData(t, "./data/reference-customer.yaml")
 
-				// Given that
-				customerTestDriver.ArrangeInternalsSomeCustomersAreRegistered(t, referenceCustomer)
-
-				// When we
-				result := customerTestDriver.ActTryToRegisterACustomer(t, referenceCustomer)
-				// twice
-
-				// Then the
-				customerTestDriver.AssertRegistrationShouldFailWithMessage(t, result, customer.ErrDuplication.Error(), "duplicated name", "duplicated email", "duplicated phone")
-
-				// And
-				customerTestDriver.AssertInternalsCustomerShouldNotBeDuplicated(t, referenceCustomer)
+				shouldNotRegisterTheSameUserTwice(t, customerTestDriver, referenceCustomer)
 			})
 
 			t.Run("should return a generic system error on failure", func(t *testing.T) {
 				referenceCustomer := loadYAMLTestData(t, "./data/reference-customer.yaml")
 
-				// Given that
-				customerTestDriver.ArrangeInternalsNoCustomerIsRegistered(t)
-
-				// And
-				customerTestDriver.ArrangeInternalsSomethingCausingAProblem(t)
-
-				// When we
-				result := customerTestDriver.ActTryToRegisterACustomer(t, referenceCustomer)
-				// with valid data
-
-				// Them the
-				customerTestDriver.AssertRegistrationShouldFailWithMessage(t, result, "system error", "contact support")
+				shouldReturnAGenericSystemErrorOnFailure(t, customerTestDriver, referenceCustomer)
 			})
 		})
 	}
@@ -181,6 +255,9 @@ func sutSetup(t *testing.T, variant string) *customer.CustomerServiceTestDriver 
 
 	return customerServiceTestDriver
 }
+
+//
+// Test Data Helpers
 
 // loadYAMLTestData loads content of a YAML test data file into a
 // `map[string]any`.
