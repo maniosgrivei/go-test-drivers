@@ -1,138 +1,178 @@
 package customer_test
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
 	"github.com/maniosgrivei/go-test-drivers/customer"
-	"github.com/maniosgrivei/go-test-drivers/customer/adapters/repository/reference"
+	reference "github.com/maniosgrivei/go-test-drivers/customer/adapters/repository/reference"
+	sqlitepoc "github.com/maniosgrivei/go-test-drivers/customer/adapters/repository/sqlite-poc"
 
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 )
 
 func TestRegisterCustomer(t *testing.T) {
-	customerRepository := reference.NewReferenceCustomerRepository()
-	customerService := customer.NewCustomerService(customerRepository)
+	for _, variant := range []string{referenceSUTVariant, sqliteSUTVariant} {
+		t.Run(fmt.Sprintf("with system variant %s", variant), func(t *testing.T) {
+			customerTestDriver := sutSetup(t, variant)
 
-	customerRepositoryTestDriver := reference.NewReferenceCustomerRepositoryTestDriver(customerRepository)
-	customerTestDriver := customer.NewCustomerServiceTestDriver(customerService, customerRepositoryTestDriver)
+			t.Run("should register a customer with valid data", func(t *testing.T) {
+				testData := loadYAMLTestData(t, "./data/valid-cases.yaml")
 
-	t.Run("should register a customer with valid data", func(t *testing.T) {
-		testData := loadYAMLTestData(t, "./data/valid-cases.yaml")
+				cases := extractCases(t, testData)
+				for title, bundle := range cases {
+					caseData := bundleToCaseData(t, bundle)
+					request := extractRequest(t, caseData)
 
-		cases := extractCases(t, testData)
-		for title, bundle := range cases {
-			caseData := bundleToCaseData(t, bundle)
-			request := extractRequest(t, caseData)
+					t.Run(title, func(t *testing.T) {
+						// Given that
+						customerTestDriver.ArrangeInternalsNoCustomerIsRegistered(t)
 
-			t.Run(title, func(t *testing.T) {
+						// When we
+						result := customerTestDriver.ActTryToRegisterACustomer(t, request)
+						// with valid data
+
+						// Then the
+						customerTestDriver.AssertRegistrationShouldSucceed(t, result)
+
+						// And the
+						customerTestDriver.AssertInternalsCustomerShouldBeProperlyRegistered(t, request)
+					})
+				}
+			})
+
+			t.Run("should reject a registration with invalid data", func(t *testing.T) {
+				testData := loadYAMLTestData(t, "./data/invalidation-cases.yaml")
+
+				cases := extractCases(t, testData)
+				for title, bundle := range cases {
+					caseData := bundleToCaseData(t, bundle)
+					request := extractRequest(t, caseData)
+					findOnError := extractFindOnError(t, caseData)
+
+					t.Run(title, func(t *testing.T) {
+						// Given that
+						customerTestDriver.ArrangeInternalsNoCustomerIsRegistered(t)
+
+						// When we
+						result := customerTestDriver.ActTryToRegisterACustomer(t, request)
+						// with invalid data
+
+						// Then the
+						customerTestDriver.AssertRegistrationShouldFailWithMessage(t, result, findOnError...)
+
+						// And the
+						customerTestDriver.AssertInternalsCustomerShouldNotBeRegistered(t, request)
+					})
+				}
+			})
+
+			t.Run("should reject a registration with duplicated data", func(t *testing.T) {
+				testData := loadYAMLTestData(t, "./data/duplication-cases.yaml")
+
+				referenceRequest := extractReferenceRequest(t, testData)
+
+				cases := extractCases(t, testData)
+				for title, bundle := range cases {
+					caseData := bundleToCaseData(t, bundle)
+					request := extractRequest(t, caseData)
+					findOnError := extractFindOnError(t, caseData)
+
+					t.Run(title, func(t *testing.T) {
+						// Given that
+						customerTestDriver.ArrangeInternalsSomeCustomersAreRegistered(t, referenceRequest)
+
+						// When we
+						result := customerTestDriver.ActTryToRegisterACustomer(t, request)
+						// with duplicated data
+
+						// Then the
+						customerTestDriver.AssertRegistrationShouldFailWithMessage(t, result, findOnError...)
+
+						// And the
+						customerTestDriver.AssertInternalsCustomerShouldNotBeRegistered(t, request)
+					})
+				}
+			})
+
+			t.Run("should not register the same user twice", func(t *testing.T) {
+				referenceCustomer := loadYAMLTestData(t, "./data/reference-customer.yaml")
+
+				// Given that
+				customerTestDriver.ArrangeInternalsSomeCustomersAreRegistered(t, referenceCustomer)
+
+				// When we
+				result := customerTestDriver.ActTryToRegisterACustomer(t, referenceCustomer)
+				// twice
+
+				// Then the
+				customerTestDriver.AssertRegistrationShouldFailWithMessage(t, result, customer.ErrDuplication.Error(), "duplicated name", "duplicated email", "duplicated phone")
+
+				// And
+				customerTestDriver.AssertInternalsCustomerShouldNotBeDuplicated(t, referenceCustomer)
+			})
+
+			t.Run("should return a generic system error on failure", func(t *testing.T) {
+				referenceCustomer := loadYAMLTestData(t, "./data/reference-customer.yaml")
+
 				// Given that
 				customerTestDriver.ArrangeInternalsNoCustomerIsRegistered(t)
 
+				// And
+				customerTestDriver.ArrangeInternalsSomethingCausingAProblem(t)
+
 				// When we
-				result := customerTestDriver.ActTryToRegisterACustomer(t, request)
+				result := customerTestDriver.ActTryToRegisterACustomer(t, referenceCustomer)
 				// with valid data
 
-				// Then the
-				customerTestDriver.AssertRegistrationShouldSucceed(t, result)
-
-				// And the
-				customerTestDriver.AssertInternalsCustomerShouldBeProperlyRegistered(t, request)
+				// Them the
+				customerTestDriver.AssertRegistrationShouldFailWithMessage(t, result, "system error", "contact support")
 			})
-		}
-	})
+		})
+	}
+}
 
-	t.Run("should reject a registration with invalid data", func(t *testing.T) {
-		testData := loadYAMLTestData(t, "./data/invalidation-cases.yaml")
+//
+// SUT Setup
 
-		cases := extractCases(t, testData)
-		for title, bundle := range cases {
-			caseData := bundleToCaseData(t, bundle)
-			request := extractRequest(t, caseData)
-			findOnError := extractFindOnError(t, caseData)
+const (
+	referenceSUTVariant = "reference"
+	sqliteSUTVariant    = "sqlite"
+)
 
-			t.Run(title, func(t *testing.T) {
-				// Given that
-				customerTestDriver.ArrangeInternalsNoCustomerIsRegistered(t)
+// sutSetup creates a new CustomerService and CustomerServiceTestDriver for the
+// given SUT variant.
+func sutSetup(t *testing.T, variant string) *customer.CustomerServiceTestDriver {
+	t.Helper()
 
-				// When we
-				result := customerTestDriver.ActTryToRegisterACustomer(t, request)
-				// with invalid data
+	var (
+		customerRepository        customer.CustomerRepository
+		repositoryTestDriver      customer.CustomerRepositoryTestDriver
+		customerService           *customer.CustomerService
+		customerServiceTestDriver *customer.CustomerServiceTestDriver
+	)
 
-				// Then the
-				customerTestDriver.AssertRegistrationShouldFailWithMessage(t, result, findOnError...)
+	switch variant {
+	case referenceSUTVariant:
+		repo := reference.NewReferenceCustomerRepository()
+		customerRepository = repo
+		repositoryTestDriver = reference.NewReferenceCustomerRepositoryTestDriver(repo)
 
-				// And the
-				customerTestDriver.AssertInternalsCustomerShouldNotBeRegistered(t, request)
-			})
-		}
-	})
+	case sqliteSUTVariant:
+		repo := sqlitepoc.NewSQLiteCustomerRepository()
+		customerRepository = repo
+		repositoryTestDriver = sqlitepoc.NewSQLiteCustomerRepositoryTestDriver(repo)
 
-	t.Run("should reject a registration with duplicated data", func(t *testing.T) {
-		testData := loadYAMLTestData(t, "./data/duplication-cases.yaml")
+	default:
+		t.Fatalf("unknown SUT variant: %s", variant)
+	}
 
-		referenceRequest := extractReferenceRequest(t, testData)
+	customerService = customer.NewCustomerService(customerRepository)
+	customerServiceTestDriver = customer.NewCustomerServiceTestDriver(customerService, repositoryTestDriver)
 
-		cases := extractCases(t, testData)
-		for title, bundle := range cases {
-			caseData := bundleToCaseData(t, bundle)
-			request := extractRequest(t, caseData)
-			findOnError := extractFindOnError(t, caseData)
-
-			t.Run(title, func(t *testing.T) {
-				// Given that
-				customerTestDriver.ArrangeInternalsSomeCustomersAreRegistered(t, referenceRequest)
-
-				// When we
-				result := customerTestDriver.ActTryToRegisterACustomer(t, request)
-				// with duplicated data
-
-				// Then the
-				customerTestDriver.AssertRegistrationShouldFailWithMessage(t, result, findOnError...)
-
-				// And the
-				customerTestDriver.AssertInternalsCustomerShouldNotBeRegistered(t, request)
-			})
-		}
-	})
-
-	t.Run("should not register the same user twice", func(t *testing.T) {
-		referenceCustomer := loadYAMLTestData(t, "./data/reference-customer.yaml")
-
-		// Given that
-		customerTestDriver.ArrangeInternalsSomeCustomersAreRegistered(t, referenceCustomer)
-
-		// When we
-		result := customerTestDriver.ActTryToRegisterACustomer(t, referenceCustomer)
-		// twice
-
-		// Then the
-		customerTestDriver.AssertRegistrationShouldFailWithMessage(t, result, customer.ErrDuplication.Error(), "duplicated name", "duplicated email", "duplicated phone")
-
-		// And
-		customerTestDriver.AssertInternalsCustomerShouldNotBeDuplicated(t, referenceCustomer)
-	})
-
-	t.Run("should return a generic system error on failure", func(t *testing.T) {
-		referenceCustomer := loadYAMLTestData(t, "./data/reference-customer.yaml")
-
-		// Given that
-		customerTestDriver.ArrangeInternalsNoCustomerIsRegistered(t)
-
-		// And
-		customerTestDriver.ArrangeInternalsSomethingCausingAProblem(t)
-
-		// When we
-		result := customerTestDriver.ActTryToRegisterACustomer(t, referenceCustomer)
-		// with valid data
-
-		// Them the
-		customerTestDriver.AssertRegistrationShouldFailWithMessage(t, result, "system error", "contact support")
-
-		// And the
-		customerTestDriver.AssertInternalsCustomerShouldNotBeRegistered(t, referenceCustomer)
-	})
+	return customerServiceTestDriver
 }
 
 // loadYAMLTestData loads content of a YAML test data file into a
