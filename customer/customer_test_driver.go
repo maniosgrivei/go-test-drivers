@@ -48,6 +48,34 @@ type CustomerRepositoryTestDriver interface {
 }
 
 //
+// Inverse Dependencies
+
+// CustomerUpperLayerTestDriver is a test driver for the Customer upper layer
+// components. It provides methods for acting and asserting on the Customer
+// Presentation layer.
+type CustomerUpperLayerTestDriver interface {
+	//
+	// Act
+
+	// ActTryToRegisterACustomer attempts to register a customer using data from
+	// a map.
+	ActTryToRegisterACustomer(t *testing.T, request map[string]any, extraArgs map[string]any) map[string]any
+
+	//
+	// Assert
+
+	// AssertRegistrationShouldSucceed asserts that the registration was
+	// successful.
+	AssertRegistrationShouldSucceed(t *testing.T, result map[string]any, extraArgs map[string]any)
+
+	// AssertRegistrationShouldFail asserts that the registration failed.
+	AssertRegistrationShouldFail(t *testing.T, result map[string]any, extraArgs map[string]any)
+
+	// AssertRegistrationShouldFailWithMessage asserts that the registration failed
+	AssertRegistrationShouldFailWithMessage(t *testing.T, result map[string]any, extraArgs map[string]any, targetMessages ...string)
+}
+
+//
 // Test Driver
 
 // CustomerServiceTestDriver is a test driver for the CustomerService.
@@ -57,6 +85,7 @@ type CustomerServiceTestDriver struct {
 	*CustomerService
 
 	repositoryTD CustomerRepositoryTestDriver
+	upperLayerTD CustomerUpperLayerTestDriver
 }
 
 // NewCustomerServiceTestDriver creates a new instance of
@@ -68,6 +97,20 @@ func NewCustomerServiceTestDriver(
 	return &CustomerServiceTestDriver{
 		CustomerService: customerService,
 		repositoryTD:    repositoryTD,
+	}
+}
+
+// NewCustomerServiceTestDriverWithPresentation creates a new instance of
+// CustomerServiceTestDriver with a presentation layer test driverf.
+func NewCustomerServiceTestDriverWithPresentation(
+	customerService *CustomerService,
+	repositoryTD CustomerRepositoryTestDriver,
+	presentationTD CustomerUpperLayerTestDriver,
+) *CustomerServiceTestDriver {
+	return &CustomerServiceTestDriver{
+		CustomerService: customerService,
+		repositoryTD:    repositoryTD,
+		upperLayerTD:    presentationTD,
 	}
 }
 
@@ -90,7 +133,10 @@ func (td *CustomerServiceTestDriver) ArrangeInternalsNoCustomerIsRegistered(t *t
 // - name: string
 // - email: string
 // - phone: string
-func (td *CustomerServiceTestDriver) ArrangeInternalsSomeCustomersAreRegistered(t *testing.T, customerMaps ...map[string]any) {
+func (td *CustomerServiceTestDriver) ArrangeInternalsSomeCustomersAreRegistered(
+	t *testing.T,
+	customerMaps ...map[string]any,
+) {
 	t.Helper()
 
 	td.ArrangeInternalsNoCustomerIsRegistered(t)
@@ -134,12 +180,25 @@ func (td *CustomerServiceTestDriver) ArrangeInternalsSomethingCausingAProblem(t 
 // It returns a map containing:
 // - id: string
 // - err: error
-func (td *CustomerServiceTestDriver) ActTryToRegisterACustomer(t *testing.T, request map[string]any) map[string]any {
+func (td *CustomerServiceTestDriver) ActTryToRegisterACustomer(
+	t *testing.T,
+	request map[string]any,
+	extraArgs map[string]any,
+) map[string]any {
 	t.Helper()
 
-	name := getOptionalStringFromMap(t, request, "name")
-	email := getOptionalStringFromMap(t, request, "email")
-	phone := getOptionalStringFromMap(t, request, "phone")
+	if td.upperLayerTD != nil {
+		result := td.upperLayerTD.ActTryToRegisterACustomer(t, request, extraArgs)
+
+		// Update the request with the generated customer ID.
+		request["id"] = result["id"]
+
+		return result
+	}
+
+	name := GetOptionalStringFromMap(t, request, "name")
+	email := GetOptionalStringFromMap(t, request, "email")
+	phone := GetOptionalStringFromMap(t, request, "phone")
 
 	id, err := td.Register(&RegisterRequest{Name: name, Email: email, Phone: phone})
 
@@ -160,8 +219,17 @@ func (td *CustomerServiceTestDriver) ActTryToRegisterACustomer(t *testing.T, req
 // It looks for the following attributes in the `result` map:
 // - id: string
 // - err: error
-func (td *CustomerServiceTestDriver) AssertRegistrationShouldSucceed(t *testing.T, result map[string]any) {
+func (td *CustomerServiceTestDriver) AssertRegistrationShouldSucceed(
+	t *testing.T,
+	result map[string]any,
+	extraArgs map[string]any,
+) {
 	t.Helper()
+
+	if td.upperLayerTD != nil {
+		td.upperLayerTD.AssertRegistrationShouldSucceed(t, result, extraArgs)
+		return
+	}
 
 	r := require.New(t)
 
@@ -169,7 +237,7 @@ func (td *CustomerServiceTestDriver) AssertRegistrationShouldSucceed(t *testing.
 		r.NoError(errVal.(error))
 	}
 
-	id := getStringFromMap(t, result, "id")
+	id := GetStringFromMap(t, result, "id")
 	r.NotEmpty(id)
 }
 
@@ -178,8 +246,18 @@ func (td *CustomerServiceTestDriver) AssertRegistrationShouldSucceed(t *testing.
 // It looks for the following attributes in the `result` map:
 // - id: string
 // - err: error
-func (td *CustomerServiceTestDriver) AssertRegistrationShouldFail(t *testing.T, result map[string]any) {
+func (td *CustomerServiceTestDriver) AssertRegistrationShouldFail(
+	t *testing.T,
+	result map[string]any,
+	extraArgs map[string]any,
+) {
 	t.Helper()
+
+	if td.upperLayerTD != nil {
+		td.upperLayerTD.AssertRegistrationShouldFail(t, result, extraArgs)
+
+		return
+	}
 
 	r := require.New(t)
 
@@ -201,10 +279,21 @@ func (td *CustomerServiceTestDriver) AssertRegistrationShouldFail(t *testing.T, 
 // It looks for the following attributes in the `result` map:
 // - id: string
 // - err: error
-func (td *CustomerServiceTestDriver) AssertRegistrationShouldFailWithMessage(t *testing.T, result map[string]any, targetMessages ...string) {
+func (td *CustomerServiceTestDriver) AssertRegistrationShouldFailWithMessage(
+	t *testing.T,
+	result map[string]any,
+	extraArgs map[string]any,
+	targetMessages ...string,
+) {
 	t.Helper()
 
-	td.AssertRegistrationShouldFail(t, result)
+	if td.upperLayerTD != nil {
+		td.upperLayerTD.AssertRegistrationShouldFailWithMessage(t, result, extraArgs, targetMessages...)
+
+		return
+	}
+
+	td.AssertRegistrationShouldFail(t, result, extraArgs)
 
 	errorMessage := result["err"].(error).Error()
 	for _, msg := range targetMessages {
@@ -220,7 +309,10 @@ func (td *CustomerServiceTestDriver) AssertRegistrationShouldFailWithMessage(t *
 // - name: string
 // - email: string
 // - phone: string
-func (td *CustomerServiceTestDriver) AssertInternalsCustomerShouldBeProperlyRegistered(t *testing.T, customerData map[string]any) {
+func (td *CustomerServiceTestDriver) AssertInternalsCustomerShouldBeProperlyRegistered(
+	t *testing.T,
+	customerData map[string]any,
+) {
 	t.Helper()
 
 	customer := getCustomerFromMap(t, customerData)
@@ -236,7 +328,10 @@ func (td *CustomerServiceTestDriver) AssertInternalsCustomerShouldBeProperlyRegi
 // - name: string
 // - email: string
 // - phone: string
-func (td *CustomerServiceTestDriver) AssertInternalsCustomerShouldNotBeRegistered(t *testing.T, customerData map[string]any) {
+func (td *CustomerServiceTestDriver) AssertInternalsCustomerShouldNotBeRegistered(
+	t *testing.T,
+	customerData map[string]any,
+) {
 	t.Helper()
 
 	customer := getCustomerFromMap(t, customerData)
@@ -246,7 +341,10 @@ func (td *CustomerServiceTestDriver) AssertInternalsCustomerShouldNotBeRegistere
 
 // AssertInternalsCustomerShouldNotBeDuplicated asserts that the customer is not
 // duplicated in the internal data structures. IDs are not compared.
-func (td *CustomerServiceTestDriver) AssertInternalsCustomerShouldNotBeDuplicated(t *testing.T, customerData map[string]any) {
+func (td *CustomerServiceTestDriver) AssertInternalsCustomerShouldNotBeDuplicated(
+	t *testing.T,
+	customerData map[string]any,
+) {
 	t.Helper()
 
 	customer := getCustomerFromMap(t, customerData)
@@ -268,15 +366,18 @@ func getCustomerFromMap(t *testing.T, data map[string]any) *Customer {
 	t.Helper()
 
 	return &Customer{
-		ID:    getOptionalStringFromMap(t, data, "id"),
-		Name:  getStringFromMap(t, data, "name"),
-		Email: getStringFromMap(t, data, "email"),
-		Phone: getStringFromMap(t, data, "phone"),
+		ID:    GetOptionalStringFromMap(t, data, "id"),
+		Name:  GetStringFromMap(t, data, "name"),
+		Email: GetStringFromMap(t, data, "email"),
+		Phone: GetStringFromMap(t, data, "phone"),
 	}
 }
 
-// getStringFromMap safely extracts a required string value from a map.
-func getStringFromMap(t *testing.T, data map[string]any, key string) string {
+//
+// Map Data Helpers
+
+// GetStringFromMap safely extracts a required string value from a map.
+func GetStringFromMap(t *testing.T, data map[string]any, key string) string {
 	t.Helper()
 	r := require.New(t)
 
@@ -290,9 +391,9 @@ func getStringFromMap(t *testing.T, data map[string]any, key string) string {
 	return strVal
 }
 
-// getOptionalStringFromMap safely extracts an optional string value from a map.
+// GetOptionalStringFromMap safely extracts an optional string value from a map.
 // It returns an empty string if the key does not exist.
-func getOptionalStringFromMap(t *testing.T, data map[string]any, key string) string {
+func GetOptionalStringFromMap(t *testing.T, data map[string]any, key string) string {
 	t.Helper()
 	r := require.New(t)
 

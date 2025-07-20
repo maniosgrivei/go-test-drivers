@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/maniosgrivei/go-test-drivers/customer"
+	"github.com/maniosgrivei/go-test-drivers/customer/adapters/presentation/rest"
 	badgerpoc "github.com/maniosgrivei/go-test-drivers/customer/adapters/repository/badger-poc"
 	reference "github.com/maniosgrivei/go-test-drivers/customer/adapters/repository/reference"
 	sqlitepoc "github.com/maniosgrivei/go-test-drivers/customer/adapters/repository/sqlite-poc"
@@ -25,6 +26,7 @@ func shouldRegisterACustomerWithValidData(
 	t *testing.T,
 	testDriver *customer.CustomerServiceTestDriver,
 	request map[string]any,
+	extraArgs map[string]any,
 ) {
 	t.Helper()
 
@@ -32,11 +34,11 @@ func shouldRegisterACustomerWithValidData(
 	testDriver.ArrangeInternalsNoCustomerIsRegistered(t)
 
 	// When we
-	result := testDriver.ActTryToRegisterACustomer(t, request)
+	result := testDriver.ActTryToRegisterACustomer(t, request, extraArgs)
 	// with valid data
 
 	// Then the
-	testDriver.AssertRegistrationShouldSucceed(t, result)
+	testDriver.AssertRegistrationShouldSucceed(t, result, extraArgs)
 
 	// And the
 	testDriver.AssertInternalsCustomerShouldBeProperlyRegistered(t, request)
@@ -48,6 +50,7 @@ func shouldRejectARegistrationWithInvalidData(
 	t *testing.T,
 	testDriver *customer.CustomerServiceTestDriver,
 	request map[string]any,
+	extraArgs map[string]any,
 	findOnError []string,
 ) {
 	t.Helper()
@@ -56,11 +59,11 @@ func shouldRejectARegistrationWithInvalidData(
 	testDriver.ArrangeInternalsNoCustomerIsRegistered(t)
 
 	// When we
-	result := testDriver.ActTryToRegisterACustomer(t, request)
+	result := testDriver.ActTryToRegisterACustomer(t, request, extraArgs)
 	// with invalid data
 
 	// Then the
-	testDriver.AssertRegistrationShouldFailWithMessage(t, result, findOnError...)
+	testDriver.AssertRegistrationShouldFailWithMessage(t, result, extraArgs, findOnError...)
 
 	// And the
 	testDriver.AssertInternalsCustomerShouldNotBeRegistered(t, request)
@@ -72,6 +75,7 @@ func shouldRejectARegistrationWithDuplicatedData(
 	t *testing.T,
 	testDriver *customer.CustomerServiceTestDriver,
 	referenceRequest, request map[string]any,
+	extraArgs map[string]any,
 	findOnError []string,
 ) {
 	t.Helper()
@@ -80,11 +84,11 @@ func shouldRejectARegistrationWithDuplicatedData(
 	testDriver.ArrangeInternalsSomeCustomersAreRegistered(t, referenceRequest)
 
 	// When we
-	result := testDriver.ActTryToRegisterACustomer(t, request)
+	result := testDriver.ActTryToRegisterACustomer(t, request, extraArgs)
 	// with duplicated data
 
 	// Then the
-	testDriver.AssertRegistrationShouldFailWithMessage(t, result, findOnError...)
+	testDriver.AssertRegistrationShouldFailWithMessage(t, result, extraArgs, findOnError...)
 
 	// And the
 	testDriver.AssertInternalsCustomerShouldNotBeRegistered(t, request)
@@ -96,6 +100,7 @@ func shouldNotRegisterTheSameUserTwice(
 	t *testing.T,
 	testDriver *customer.CustomerServiceTestDriver,
 	referenceCustomer map[string]any,
+	extraArgs map[string]any,
 ) {
 	t.Helper()
 
@@ -103,11 +108,14 @@ func shouldNotRegisterTheSameUserTwice(
 	testDriver.ArrangeInternalsSomeCustomersAreRegistered(t, referenceCustomer)
 
 	// When we
-	result := testDriver.ActTryToRegisterACustomer(t, referenceCustomer)
+	result := testDriver.ActTryToRegisterACustomer(t, referenceCustomer, extraArgs)
 	// twice
 
 	// Then the
-	testDriver.AssertRegistrationShouldFailWithMessage(t, result, customer.ErrDuplication.Error(), "duplicated name", "duplicated email", "duplicated phone")
+	testDriver.AssertRegistrationShouldFailWithMessage(
+		t, result, extraArgs,
+		customer.ErrDuplication.Error(), "duplicated name", "duplicated email", "duplicated phone",
+	)
 
 	// And
 	testDriver.AssertInternalsCustomerShouldNotBeDuplicated(t, referenceCustomer)
@@ -119,6 +127,7 @@ func shouldReturnAGenericSystemErrorOnFailure(
 	t *testing.T,
 	customerTestDriver *customer.CustomerServiceTestDriver,
 	referenceCustomer map[string]any,
+	extraArgs map[string]any,
 ) {
 	t.Helper()
 
@@ -129,11 +138,11 @@ func shouldReturnAGenericSystemErrorOnFailure(
 	customerTestDriver.ArrangeInternalsSomethingCausingAProblem(t)
 
 	// When we
-	result := customerTestDriver.ActTryToRegisterACustomer(t, referenceCustomer)
+	result := customerTestDriver.ActTryToRegisterACustomer(t, referenceCustomer, extraArgs)
 	// with valid data
 
 	// Them the
-	customerTestDriver.AssertRegistrationShouldFailWithMessage(t, result, "system error", "contact support")
+	customerTestDriver.AssertRegistrationShouldFailWithMessage(t, result, extraArgs, "system error", "contact support")
 }
 
 //
@@ -144,7 +153,14 @@ func shouldReturnAGenericSystemErrorOnFailure(
 // TestRegisterCustomer is the acceptance test suite for the customer registration
 // use case.
 func TestRegisterCustomer(t *testing.T) {
-	for _, variant := range []string{referenceSUTVariant, sqliteSUTVariant, badgerSUTVariant} {
+	for _, variant := range []string{
+		referenceSUTVariant,
+		sqliteSUTVariant,
+		badgerSUTVariant,
+		referenceRESTSUTVariant,
+		sqliteRESTSUTVariant,
+		badgerRESTSUTVariant,
+	} {
 		t.Run(fmt.Sprintf("with system variant %s", variant), func(t *testing.T) {
 			customerTestDriver := sutSetup(t, variant)
 
@@ -155,9 +171,10 @@ func TestRegisterCustomer(t *testing.T) {
 				for title, bundle := range cases {
 					caseData := bundleToCaseData(t, bundle)
 					request := extractRequest(t, caseData)
+					extraArgs := extractExtraArgs(t, caseData)
 
 					t.Run(title, func(t *testing.T) {
-						shouldRegisterACustomerWithValidData(t, customerTestDriver, request)
+						shouldRegisterACustomerWithValidData(t, customerTestDriver, request, extraArgs)
 					})
 				}
 			})
@@ -169,10 +186,11 @@ func TestRegisterCustomer(t *testing.T) {
 				for title, bundle := range cases {
 					caseData := bundleToCaseData(t, bundle)
 					request := extractRequest(t, caseData)
+					extraArgs := extractExtraArgs(t, caseData)
 					findOnError := extractFindOnError(t, caseData)
 
 					t.Run(title, func(t *testing.T) {
-						shouldRejectARegistrationWithInvalidData(t, customerTestDriver, request, findOnError)
+						shouldRejectARegistrationWithInvalidData(t, customerTestDriver, request, extraArgs, findOnError)
 					})
 				}
 			})
@@ -186,24 +204,29 @@ func TestRegisterCustomer(t *testing.T) {
 				for title, bundle := range cases {
 					caseData := bundleToCaseData(t, bundle)
 					request := extractRequest(t, caseData)
+					extraArgs := extractExtraArgs(t, caseData)
 					findOnError := extractFindOnError(t, caseData)
 
 					t.Run(title, func(t *testing.T) {
-						shouldRejectARegistrationWithDuplicatedData(t, customerTestDriver, referenceRequest, request, findOnError)
+						shouldRejectARegistrationWithDuplicatedData(
+							t, customerTestDriver, referenceRequest, request, extraArgs, findOnError,
+						)
 					})
 				}
 			})
 
 			t.Run("should not register the same user twice", func(t *testing.T) {
 				referenceCustomer := loadYAMLTestData(t, "./data/reference-customer.yaml")
+				extraArgs := loadYAMLTestData(t, "./data/conflict-extra-args.yaml")
 
-				shouldNotRegisterTheSameUserTwice(t, customerTestDriver, referenceCustomer)
+				shouldNotRegisterTheSameUserTwice(t, customerTestDriver, referenceCustomer, extraArgs)
 			})
 
 			t.Run("should return a generic system error on failure", func(t *testing.T) {
 				referenceCustomer := loadYAMLTestData(t, "./data/reference-customer.yaml")
+				extraArgs := loadYAMLTestData(t, "./data/server-error-extra-args.yaml")
 
-				shouldReturnAGenericSystemErrorOnFailure(t, customerTestDriver, referenceCustomer)
+				shouldReturnAGenericSystemErrorOnFailure(t, customerTestDriver, referenceCustomer, extraArgs)
 			})
 		})
 	}
@@ -213,9 +236,14 @@ func TestRegisterCustomer(t *testing.T) {
 // SUT Setup
 
 const (
-	referenceSUTVariant = "reference"
-	sqliteSUTVariant    = "sqlite"
-	badgerSUTVariant    = "badger"
+	referenceSUTVariant     = "reference"
+	referenceRESTSUTVariant = "reference-rest"
+
+	sqliteSUTVariant     = "sqlite"
+	sqliteRESTSUTVariant = "sqlite-rest"
+
+	badgerSUTVariant     = "badger"
+	badgerRESTSUTVariant = "badger-rest"
 )
 
 // sutSetup creates a new CustomerService and CustomerServiceTestDriver for the
@@ -230,18 +258,19 @@ func sutSetup(t *testing.T, variant string) *customer.CustomerServiceTestDriver 
 		customerServiceTestDriver *customer.CustomerServiceTestDriver
 	)
 
+	// Setup repository
 	switch variant {
-	case referenceSUTVariant:
+	case referenceSUTVariant, referenceRESTSUTVariant:
 		repo := reference.NewReferenceCustomerRepository()
 		customerRepository = repo
 		repositoryTestDriver = reference.NewReferenceCustomerRepositoryTestDriver(repo)
 
-	case sqliteSUTVariant:
+	case sqliteSUTVariant, sqliteRESTSUTVariant:
 		repo := sqlitepoc.NewSQLiteCustomerRepository()
 		customerRepository = repo
 		repositoryTestDriver = sqlitepoc.NewSQLiteCustomerRepositoryTestDriver(repo)
 
-	case badgerSUTVariant:
+	case badgerSUTVariant, badgerRESTSUTVariant:
 		repo := badgerpoc.NewBadgerCustomerRepository()
 		customerRepository = repo
 		repositoryTestDriver = badgerpoc.NewBadgerCustomerRepositoryTestDriver(repo)
@@ -251,7 +280,21 @@ func sutSetup(t *testing.T, variant string) *customer.CustomerServiceTestDriver 
 	}
 
 	customerService = customer.NewCustomerService(customerRepository)
-	customerServiceTestDriver = customer.NewCustomerServiceTestDriver(customerService, repositoryTestDriver)
+
+	// Setup presentation
+	switch variant {
+	case referenceRESTSUTVariant, sqliteRESTSUTVariant, badgerRESTSUTVariant:
+		restAPIHandler := rest.NewCustomerRESTAPIHandler(customerService)
+
+		restPresentationTestDriver := rest.NewCustomerRESTAPIHandlerTestDriver(restAPIHandler)
+
+		customerServiceTestDriver = customer.NewCustomerServiceTestDriverWithPresentation(
+			customerService, repositoryTestDriver, restPresentationTestDriver,
+		)
+
+	default:
+		customerServiceTestDriver = customer.NewCustomerServiceTestDriver(customerService, repositoryTestDriver)
+	}
 
 	return customerServiceTestDriver
 }
@@ -333,6 +376,20 @@ func extractRequest(t *testing.T, caseData map[string]any) map[string]any {
 	r.IsType(map[string]any{}, caseData["request"])
 
 	return caseData["request"].(map[string]any)
+}
+
+// extractExtraArgs extracts the extra args map from the given case data.
+//
+// It looks for the following attributes:
+// - extra_args: map[string]any
+func extractExtraArgs(t *testing.T, caseData map[string]any) map[string]any {
+	r := require.New(t)
+
+	r.Contains(caseData, "extra_args")
+	r.NotNil(caseData["extra_args"])
+	r.IsType(map[string]any{}, caseData["extra_args"])
+
+	return caseData["extra_args"].(map[string]any)
 }
 
 // extractFindOnError extracts the `find_on_error` attribute from the given case

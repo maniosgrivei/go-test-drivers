@@ -3,6 +3,10 @@ reference_request: &reference_request
   email: "john.due@somecompany.com"
   phone: "+1 234 567 890"
 
+reference_http_response: &reference_http_response
+  status_code: 400
+  status: "Bad Request"
+
 cases:
   "when missing name":
     request:
@@ -11,6 +15,9 @@ cases:
     find_on_error:
       - "validation error"
       - "invalid name"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when missing email":
     request:
@@ -19,6 +26,9 @@ cases:
     find_on_error:
       - "validation error"
       - "invalid email"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when missing phone":
     request:
@@ -27,6 +37,9 @@ cases:
     find_on_error:
       - "validation error"
       - "invalid phone"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when missing name and email":
     request:
@@ -37,6 +50,9 @@ cases:
       - "validation error"
       - "invalid name"
       - "invalid email"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when missing name and phone":
     request:
@@ -47,6 +63,9 @@ cases:
       - "validation error"
       - "invalid name"
       - "invalid phone"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when missing email and phone":
     request:
@@ -57,6 +76,9 @@ cases:
       - "validation error"
       - "invalid email"
       - "invalid phone"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when missing all data":
     request:
@@ -69,6 +91,9 @@ cases:
       - "invalid name"
       - "invalid email"
       - "invalid phone"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when name is too short":
     request:
@@ -78,6 +103,9 @@ cases:
       - "validation error"
       - "invalid name"
       - "too short"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when name has only a single part":
     request:
@@ -87,6 +115,9 @@ cases:
       - "validation error"
       - "invalid name"
       - "not a full name"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when name has two parts but one is too short":
     request:
@@ -96,6 +127,9 @@ cases:
       - "validation error"
       - "invalid name"
       - "first or last name too short"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
   
   "when name is too long":
     request:
@@ -105,6 +139,9 @@ cases:
       - "validation error"
       - "invalid name"
       - "too long"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when name has invalid character @":
     request:
@@ -114,6 +151,9 @@ cases:
       - "validation error"
       - "invalid name"
       - "invalid character"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when name has invalid character #":
     request:
@@ -123,6 +163,9 @@ cases:
       - "validation error"
       - "invalid name"
       - "invalid character"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when name has invalid character $":
     request:
@@ -132,6 +175,9 @@ cases:
       - "validation error"
       - "invalid name"
       - "invalid character"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when name has invalid character !":
     request:
@@ -141,6 +187,9 @@ cases:
       - "validation error"
       - "invalid name"
       - "invalid character"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when name has invalid character %":
     request:
@@ -150,6 +199,9 @@ cases:
       - "validation error"
       - "invalid name"
       - "invalid character"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when name has invalid character sequence --":
     request:
@@ -159,6 +211,9 @@ cases:
       - "validation error"
       - "invalid name"
       - "invalid character sequence"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when name has invalid character sequence":
     request:
@@ -168,6 +223,9 @@ cases:
       - "validation error"
       - "invalid name"
       - "invalid character sequence"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when name has invalid characters sequence blank blank":
     request:
@@ -177,6 +235,9 @@ cases:
       - "validation error"
       - "invalid name"
       - "invalid character sequence"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when email is longer than the maximum acceptable":
     request:
@@ -186,6 +247,9 @@ cases:
       - "validation error"
       - "invalid email"
       - "too long"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when email username has invalid characters":
     request:
@@ -196,6 +260,9 @@ cases:
       - "invalid email"
       - "invalid username"
       - "invalid characters"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when email service has invalid characters":
     request:
@@ -206,6 +273,9 @@ cases:
       - "invalid email"
       - "invalid service"
       - "invalid characters"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when email extension has invalid characters":
     request:
@@ -216,6 +286,9 @@ cases:
       - "invalid email"
       - "invalid extension"
       - "invalid characters"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when email username is too short":
     request:
@@ -226,6 +299,9 @@ cases:
       - "invalid email"
       - "invalid username"
       - "too short"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when email service is too short":
     request:
@@ -236,6 +312,9 @@ cases:
       - "invalid email"
       - "invalid service"
       - "too short"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when email extension is too short":
     request:
@@ -246,6 +325,9 @@ cases:
       - "invalid email"
       - "invalid extension"
       - "too short"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when email has no @ symbol":
     request:
@@ -255,6 +337,9 @@ cases:
       - "validation error"
       - "invalid email"
       - "invalid email format"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when email has no dot in domain part":
     request:
@@ -264,6 +349,9 @@ cases:
       - "validation error"
       - "invalid email"
       - "invalid email format"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when phone is shorter than minimum acceptable":
     request:
@@ -273,6 +361,9 @@ cases:
       - "validation error"
       - "invalid phone"
       - "too short"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
   
   "when phone is longer than maximum acceptable":
     request:
@@ -282,6 +373,9 @@ cases:
       - "validation error"
       - "invalid phone"
       - "too long"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when phone has invalid characters":
     request:
@@ -291,6 +385,9 @@ cases:
       - "validation error"
       - "invalid phone"
       - "invalid characters"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when phone has invalid character sequence":
     request:
@@ -300,6 +397,9 @@ cases:
       - "validation error"
       - "invalid phone"
       - "invalid character sequence"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when phone does not start with a plus symbol":
     request:
@@ -310,6 +410,9 @@ cases:
       - "invalid phone"
       - "invalid country code"
       - "missing the leading plus symbol"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when phone country code is too long":
     request:
@@ -320,6 +423,9 @@ cases:
       - "invalid phone"
       - "invalid country code"
       - "too long"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when phone has no space after country code":
     request:
@@ -329,3 +435,6 @@ cases:
       - "validation error"
       - "invalid phone"
       - "invalid phone format"
+    extra_args:
+      http_response:
+        <<: *reference_http_response

@@ -1,102 +1,157 @@
+reference_http_response: &reference_http_response
+  status_code: 201
+  status: "Created"
+
 cases:
   "when ordinary physical person":
     request:
       name: "John Due"
       email: "john.due@somecompany.com"
       phone: "+1 234 567 890"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when name composed only by vowels":
     request:
       name: "Aeoui Euio"
       email: "aeoui.euio@somecompany.com"
       phone: "+1 652 527 890"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when name composed only by consonants":
     request:
       name: "Sywvy Wlsch"
       email: "sywvy.wlsch@somecompany.com"
       phone: "+1 652 854 855"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when shorted middle name":
     request:
       name: "Silvia L. Theodore"
       email: "silvia.theodore@somecompany.com"
       phone: "+1 297 554 822"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when the minimum acceptable name":
     request:
       name: "Joe Ell"
       email: "joe.ell@somecompany.com"
       phone: "+1 633 877 855"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when the maximum acceptable name":
     request:
       name: "Joellezinammund Elliah Einchbackhrrabin Norberto Friccacello"
       email: "elliah.einchbackhrrabin@somecompany.com"
       phone: "+1 629 555 475"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when is a company":
     request:
       name: "Stelantis Inc."
       email: "contact@stelantis.com"
       phone: "+1 857 117 115"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when the company name starting by a number":
     request:
       name: "99Burger Ltd."
       email: "askfor@99burger.com"
       phone: "+1 999 845 035"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when email has the maximum allowed length":
     request:
       name: "International Compliance Solutions LLC"
       email: "user.name.with.many.dots.and.numbers1234567890@long-mail.io"
       phone: "+44 20 7946 0958"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when email username has the minimum allowed length":
     request:
       name: "ABC Logistics"
       email: "abc@shipping-and-handling.co.uk"
       phone: "+44 20 7946 0959"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when email service name has the minimum allowed length":
     request:
       name: "Domain XYZ Partners"
       email: "contact-us@xyz.org"
       phone: "+1 415 555 2671"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when email extension has the minimum allowed length":
     request:
       name: "Digital Ocean Imports"
       email: "support@digital-imports.io"
       phone: "+1 415 555 2672"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when email username uses all allowed character types":
     request:
       name: "Hyphen-Underscore Industries"
       email: "user_name-123.test.456@hyphen-underscore.industries"
       phone: "+1 415 555 2673"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when phone has the maximum allowed length":
     request:
       name: "Global Telecommunications Inc."
       email: "contact@global-telecom.com"
       phone: "+1 123 456 7890 1234"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when phone has a 1-digit country code":
     request:
       name: "North American Logistics"
       email: "shipping@nalogistics.us"
       phone: "+1 555 123 4567"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when phone has a 3-digit country code":
     request:
       name: "Emerald Isle Imports"
       email: "orders@emeraldisle.ie"
       phone: "+353 1 456 7890"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when phone contains multiple spaces":
     request:
       name: "Brazil Coffee Exporters"
       email: "export@brazilcoffee.com.br"
       phone: "+55 11 98765 4321"
+    extra_args:
+      http_response:
+        <<: *reference_http_response

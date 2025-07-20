@@ -3,6 +3,10 @@ reference_request: &reference_request
   email: "john.due@somecompany.com"
   phone: "+1 234 567 890"
 
+reference_http_response: &reference_http_response
+  status_code: 409
+  status: "Conflict"
+
 cases:
   "when having same name":
     request:
@@ -12,6 +16,9 @@ cases:
     find_on_error:
       - "duplication error"
       - "duplicated name"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when having same email":
     request:
@@ -21,6 +28,9 @@ cases:
     find_on_error:
       - "duplication error"
       - "duplicated email"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when having same phone":
     request:
@@ -30,6 +40,9 @@ cases:
     find_on_error:
       - "duplication error"
       - "duplicated phone"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when having same name and email":
     request:
@@ -39,6 +52,9 @@ cases:
       - "duplication error"
       - "duplicated name"
       - "duplicated email"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when having same name and phone":
     request:
@@ -48,6 +64,9 @@ cases:
       - "duplication error"
       - "duplicated name"
       - "duplicated phone"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
 
   "when having same email and phone":
     request:
@@ -57,3 +76,6 @@ cases:
       - "duplication error"
       - "duplicated email"
       - "duplicated phone"
+    extra_args:
+      http_response:
+        <<: *reference_http_response
