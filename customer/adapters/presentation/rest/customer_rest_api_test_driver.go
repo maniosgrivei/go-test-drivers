@@ -3,9 +3,14 @@
 package rest
 
 import (
+	"bytes"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/maniosgrivei/go-test-drivers/customer"
+	"github.com/stretchr/testify/require"
 )
 
 // CustomerRESTAPIHandlerTestDriver is the test driver for the
@@ -35,11 +40,40 @@ func (td *CustomerRESTAPIHandlerTestDriver) ActTryToRegisterACustomer(
 ) map[string]any {
 	t.Helper()
 
-	t.Log("ActTryToRegisterACustomer not implemented yet")
+	r := require.New(t)
 
-	t.Fail()
+	// Prepare request
+	body, err := json.Marshal(request)
+	r.NoError(err)
 
-	return nil
+	req, err := http.NewRequest(http.MethodPost, "/customers", bytes.NewReader(body))
+	r.NoError(err)
+
+	req.Header.Set("Content-Type", "application/json")
+
+	// Record response
+	recorder := httptest.NewRecorder()
+	td.restAPI.ServeHTTP(recorder, req)
+
+	// Parse response body
+	var responseBody map[string]any
+	err = json.Unmarshal(recorder.Body.Bytes(), &responseBody)
+	if err != nil {
+		responseBody = nil // Handle cases with no or non-JSON body
+	}
+
+	result := map[string]any{
+		"id":            "",
+		"response_body": responseBody,
+		"status_code":   recorder.Code,
+		"status":        http.StatusText(recorder.Code),
+	}
+
+	if recorder.Code < http.StatusBadRequest {
+		result["id"] = getIDFromResponseBody(t, responseBody)
+	}
+
+	return result
 }
 
 //
@@ -53,9 +87,23 @@ func (td *CustomerRESTAPIHandlerTestDriver) AssertRegistrationShouldSucceed(
 ) {
 	t.Helper()
 
-	t.Log("AssertRegistrationShouldSucceed not implemented yet")
+	r := require.New(t)
 
-	t.Fail()
+	// Check status
+	expectedStatus := getExpectedStatus(t, extraParams)
+	r.IsType(expectedStatus, result["status"])
+	r.Equal(expectedStatus, result["status"].(string))
+
+	// Check status code
+	expectedStatusCode := getExpectedStatusCode(t, extraParams)
+	r.IsType(expectedStatusCode, result["status_code"])
+	r.Equal(expectedStatusCode, result["status_code"].(int))
+
+	// Check body for ID
+	r.Contains(result, "response_body")
+	r.IsType(map[string]any{}, result["response_body"])
+	responseBody := result["response_body"].(map[string]any)
+	r.NotEmpty(getIDFromResponseBody(t, responseBody))
 }
 
 // AssertRegistrationShouldFail asserts that the HTTP response indicates a failure.
@@ -66,9 +114,17 @@ func (td *CustomerRESTAPIHandlerTestDriver) AssertRegistrationShouldFail(
 ) {
 	t.Helper()
 
-	t.Log("AssertRegistrationShouldFail not implemented yet")
+	r := require.New(t)
 
-	t.Fail()
+	// Check status
+	expectedStatus := getExpectedStatus(t, extraParams)
+	r.IsType(expectedStatus, result["status"])
+	r.Equal(expectedStatus, result["status"].(string))
+
+	// Check status code
+	expectedStatusCode := getExpectedStatusCode(t, extraParams)
+	r.IsType(expectedStatusCode, result["status_code"])
+	r.Equal(expectedStatusCode, result["status_code"].(int))
 }
 
 // AssertRegistrationShouldFailWithMessage asserts that the HTTP response indicates a failure
@@ -81,7 +137,64 @@ func (td *CustomerRESTAPIHandlerTestDriver) AssertRegistrationShouldFailWithMess
 ) {
 	t.Helper()
 
-	t.Log("AssertRegistrationShouldFailWithMessage not implemented yet")
+	r := require.New(t)
 
-	t.Fail()
+	td.AssertRegistrationShouldFail(t, result, extraParams)
+
+	// Check error message in body
+	r.Contains(result, "response_body")
+	r.IsType(map[string]any{}, result["response_body"])
+	responseBody := result["response_body"].(map[string]any)
+
+	r.Contains(responseBody, "error")
+	r.IsType("", responseBody["error"])
+	errorMessage := responseBody["error"].(string)
+
+	r.NotEmpty(errorMessage)
+	for _, msg := range targetMessages {
+		r.Contains(errorMessage, msg)
+	}
+}
+
+func getIDFromResponseBody(t *testing.T, responseBody map[string]any) string {
+	t.Helper()
+
+	r := require.New(t)
+
+	r.Contains(responseBody, "id")
+	r.IsType("", responseBody["id"])
+
+	return responseBody["id"].(string)
+}
+
+// getExpectedStatus extracts the expected HTTP status from the extra parameters.
+func getExpectedStatus(t *testing.T, extraParams map[string]any) string {
+	t.Helper()
+
+	r := require.New(t)
+
+	r.Contains(extraParams, "http_response")
+	httpResponse, ok := extraParams["http_response"].(map[string]any)
+	r.True(ok)
+	r.Contains(httpResponse, "status")
+	status, ok := httpResponse["status"].(string)
+	r.True(ok)
+
+	return status
+}
+
+// getExpectedStatusCode extracts the expected HTTP status code from the extra parameters.
+func getExpectedStatusCode(t *testing.T, extraParams map[string]any) int {
+	t.Helper()
+
+	r := require.New(t)
+
+	r.Contains(extraParams, "http_response")
+	httpResponse, ok := extraParams["http_response"].(map[string]any)
+	r.True(ok)
+	r.Contains(httpResponse, "status_code")
+	statusCode, ok := httpResponse["status_code"].(int)
+	r.True(ok)
+
+	return statusCode
 }
